@@ -1,0 +1,14 @@
+{
+  "host": "smtp.gmail.com",
+  "port": "587",
+  "user": "alex.langeveld@itv.com",
+  "password": "jlaj gnrg jcxt qgbn",
+  "aan": "alex.langeveld@itv.com",
+  "cc": [],
+  "onderwerp": "Linkje $naam",
+  "emailBody": "Hoihoi,\n
+\n
+Hier het linkje van $naam: $link\n
+\n
+Met vriendelijke groet,"
+}
