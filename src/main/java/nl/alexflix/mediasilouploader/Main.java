@@ -17,6 +17,7 @@ import java.util.Scanner;
 
 public class Main {
 
+
     private static Watchfolder watchfolder;
     public static Display display;
     private static Thread displayThread;
