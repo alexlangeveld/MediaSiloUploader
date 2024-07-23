@@ -42,6 +42,8 @@ public class Main {
             mediaSiloAPIsecret = envVars.get("APIsecret");
         }
 
+        if (envVars.containsKey("emailTemplate")) emailTemplatePath = envVars.get("emailTemplate");
+
 
         try {
             for (int i = 0; i < args.length; i++) {
