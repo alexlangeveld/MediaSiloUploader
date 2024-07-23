@@ -12,12 +12,13 @@ import nl.alexflix.mediasilouploader.remote.mediasilo.Uploader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Scanner;
 
 public class Main {
-
-
+    public static Logger logger;
+    private static Thread loggerThread;
     private static Watchfolder watchfolder;
     public static Display display;
     private static Thread displayThread;
@@ -34,7 +35,15 @@ public class Main {
 
 
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+
+        Map<String, String> envVars = System.getenv();
+        if (envVars.containsKey("APIkey") && envVars.containsKey("APIsecret")) {
+            mediaSiloAPIkey = envVars.get("APIkey");
+            mediaSiloAPIsecret = envVars.get("APIsecret");
+        }
+
+        if (envVars.containsKey("emailTemplate")) emailTemplatePath = envVars.get("emailTemplate");
+
 
         try {
             for (int i = 0; i < args.length; i++) {
@@ -52,6 +61,13 @@ public class Main {
             Util.err("Er is iets goed mis met je commando:");
             Util.err("Gebruik: --folder <folder> --ffmpeg <path> --mediaInfo <path> --verbose --apiKey <key> --apiSecret <secret>");
         }
+
+
+        logger = new Logger(logFileDir);
+        loggerThread = new Thread(logger);
+        loggerThread.setName("LoggerThread");
+        loggerThread.setPriority(Thread.MIN_PRIORITY);
+        loggerThread.start();
 
 
         watchfolder = new Watchfolder(watchFolderPath, transcodeQueue, exports);
@@ -87,8 +103,14 @@ public class Main {
 
         //waitForQuit(watchfolder, watchfolderThread, transcoderThread, uploaderThread, emailerThread);
         waitForQuit(watchfolderThread, transcoderThread, uploaderThread, emailerThread, displayThread);
-        Util.log2file();
         Util.printAll();
+
+        logger.stop();
+        try {
+            loggerThread.join();
+        } catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     private static void waitForQuit(Watchfolder watchfolder, Thread... threads) {
