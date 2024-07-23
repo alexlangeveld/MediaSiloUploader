@@ -50,7 +50,7 @@ public class SimpleDisplay implements Display {
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException ignore) { }
-
+            if (!running) break;
             String output = render();
             clearScreen();
             System.out.print(output);
