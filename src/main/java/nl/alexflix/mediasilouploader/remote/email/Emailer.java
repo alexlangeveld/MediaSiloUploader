@@ -69,8 +69,8 @@ public class Emailer implements Runnable {
                     }
                 }
                 Email email = new Email(export, emailTemplate, username);
-                send(email, false);
-                export.setEmailSent(true);
+                boolean sent = send(email, false);
+                export.setEmailSent(sent);
                 doneQueue.put(export);
             } catch (InterruptedException e) {
                 Util.err("E-mail wachtrij reageert niet: " + e.getMessage());
@@ -121,6 +121,7 @@ public class Emailer implements Runnable {
             Util.success(email.getOnderwerp() + " is verstuurd");
         } catch (MessagingException e) {
             Util.err("Kon " + email.getOnderwerp() + " niet sturen: " + e.getMessage());
+            return false;
         }
 
 

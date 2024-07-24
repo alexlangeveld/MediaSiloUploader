@@ -7,23 +7,39 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Incoming extends Export {
+    File file;
+    String[] naamElementen;
     String naam;
+    int cyclesMissing = 0;
+    boolean fileExists;
+    private boolean hide = false;
 
     public Incoming(File file) {
-        String[] naamelementen = file.getName().split(";");
-        this.naam = naamelementen[0];
+        this.file = file;
+        this.naamElementen = file.getName().split(";");
+        this.naam = naamElementen[0];
+    }
+
+    public boolean isHidden() {
+        return hide;
     }
 
     @Override
     public String toString() {
-        return this.naam;
+        fileExists = file.exists();
+        if (cyclesMissing >= 10) hide = true;
+        if (fileExists) {
+            return Util.ANSI_BOLD_HIGH_INTENSITY_YELLOW + "=>  " + naam + Util.ANSI_RESET;
+        } else {
+            cyclesMissing++;
+            return Util.ANSI_RED + "  X " + naam + Util.ANSI_RESET;
+        }
     }
 
     @Override
     public String toSubString(int length) {
-        String str = this.toString();
-        int lengte = Math.min(length, str.length());
-        return Util.ANSI_YELLOW + toString().substring(0, lengte) + Util.ANSI_RESET;
+        int extraChars = toString().length() - naam.length() - 4;
+        return super.toSubString(length + extraChars);
     }
 
     @Override
@@ -56,11 +72,11 @@ public class Incoming extends Export {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Incoming incoming = (Incoming) o;
-        return Objects.equals(naam, incoming.naam);
+        return Objects.equals(file.getAbsolutePath(), incoming.file.getAbsolutePath());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(naam);
+        return Objects.hash(file.getAbsolutePath());
     }
 }

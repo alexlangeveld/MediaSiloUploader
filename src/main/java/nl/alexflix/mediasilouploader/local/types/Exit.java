@@ -17,6 +17,11 @@ public class Exit extends Export{
 //    }
     @Override
     public String toString() {
-        return "\u001B[31m" + "   -- EXIT --       " + "\u001B[0m";
+        return "\u001B[31m" + "        ----- EXIT -----   " + "\u001B[0m";
+    }
+
+    @Override
+    public String toSubString(int length) {
+        return super.toSubString(length + 9);
     }
 }

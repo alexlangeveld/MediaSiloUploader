@@ -74,9 +74,21 @@ public class Export {
     }
 
     public String toSubString(int length) {
-        String str = toString();
-        int lengte = Math.min(length, str.length());
-        return toString().substring(0, lengte);
+        String str = "  " + this;
+        int strLength = str.length();
+        int len = Math.min(length, strLength);
+        String result = str.substring(0, len);
+
+        // Pad the result if it's shorter than the specified length
+        if (len < length) {
+            StringBuilder paddedResult = new StringBuilder(result);
+            while (paddedResult.length() < length) {
+                paddedResult.append(' '); // Append spaces to the end
+            }
+            result = paddedResult.toString();
+        }
+
+        return result;
     }
 
     public Status Status() {
