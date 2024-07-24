@@ -61,14 +61,14 @@ public class MediaInfo {
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
 
-
+            String filename = filePath.substring(filePath.lastIndexOf("\\") + 1);
             while ((line = reader.readLine()) != null) {
                 if (line.contains("<Format_Settings>Open / Incomplete</Format_Settings>")) {
-                    Util.log("MXF open, not yet complete");
+                    Util.log(filename + " open, not yet complete");
                     closed = false;
                 }
                 else if (line.contains("<Format_Settings>Closed / Complete</Format_Settings>")) {
-                    Util.success("MXF compleet, good to go!");
+                    Util.success(filename + " compleet, good to go!");
                     closed = true;
                 }
 
@@ -84,7 +84,7 @@ public class MediaInfo {
                 }
             } else Util.err("MediaInfo timeout");
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            Util.err("Er ging iets mis met MediaInfo: " + e.getMessage());
         }
 
        return closed;
