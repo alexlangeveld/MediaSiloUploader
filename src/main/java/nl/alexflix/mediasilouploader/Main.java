@@ -35,7 +35,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        System.out.println("MediaSiloUploader v0.1");
+        System.out.println("MediaSiloUploader v0.2.1");
 
         Map<String, String> envVars = System.getenv();
         if (envVars.containsKey("APIkey") && envVars.containsKey("APIsecret")) {
@@ -150,10 +150,10 @@ public class Main {
             Main.exit = true;
 
             watchfolder.stop();
-            display.stop();
             Export exit = new Exit();
             exports.add(exit);
             transcodeQueue.put(exit);
+            display.stop();
 
             for (Thread thread : threads) {
                 if (thread != null) thread.join();
@@ -164,6 +164,8 @@ public class Main {
             for (Thread thread : threads) {
                 thread.interrupt();
             }
+        } catch (NullPointerException e) {
+            Util.err(e.getMessage());
         }
 
 
@@ -197,6 +199,9 @@ public class Main {
         return projectNaam;
     }
 
+    public static Watchfolder getWatchfolder() {
+        return watchfolder;
+    }
 
     public static boolean queuesEmpty() {
         return Uploader.noThreadsRunning() && transcodeQueue.isEmpty() && uploadQueue.isEmpty() && emailQueue.isEmpty();

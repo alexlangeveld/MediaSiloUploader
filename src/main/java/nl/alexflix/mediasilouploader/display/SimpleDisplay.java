@@ -16,19 +16,43 @@ import java.util.Scanner;
 
 public class SimpleDisplay implements Display {
     private List<Export> exports;
-    private List<Export> incomings;
     public boolean running = true;
     public String tempStatus = "";
 
-    private final String[] logo = {
+    private final String[] logo1 = {
             "|\\/| _  _|o _.(_ o| _  | |._ | _  _. _| _ ._ ",
             "|  |(/_(_||(_|__)||(_) |_||_)|(_)(_|(_|(/_|   ",
             "                          |                   "
     };
 
+    private final String[] logo2 = {
+            "=======================================================================================================================",
+            "=  =====  ============  ==============      =======  =========  ====  =========  ===================  =================",
+            "=   ===   ============  =============  ====  ======  =========  ====  =========  ===================  =================",
+            "=  =   =  ============  =============  ====  ======  =========  ====  =========  ===================  =================",
+            "=  == ==  ===   ======  ==  ===   ====  =======  ==  ===   ===  ====  ==    ===  ===   ====   ======  ===   ===  =   ==",
+            "=  =====  ==  =  ===    ======  =  =====  =========  ==     ==  ====  ==  =  ==  ==     ==  =  ===    ==  =  ==    =  =",
+            "=  =====  ==     ==  =  ==  =====  =======  ===  ==  ==  =  ==  ====  ==  =  ==  ==  =  =====  ==  =  ==     ==  ======",
+            "=  =====  ==  =====  =  ==  ===    ==  ====  ==  ==  ==  =  ==  ====  ==    ===  ==  =  ===    ==  =  ==  =====  ======",
+            "=  =====  ==  =  ==  =  ==  ==  =  ==  ====  ==  ==  ==  =  ==   ==   ==  =====  ==  =  ==  =  ==  =  ==  =  ==  ======",
+            "=  =====  ===   ====    ==  ===    ===      ===  ==  ===   ====      ===  =====  ===   ====    ===    ===   ===  ======",
+            "======================================================================================================================="
+    };
+
+    private final String[] logo3 = {
+        "    __  ___         _         _____   __      __  __      __                __         ",
+        "   /  |/  /__  ____/ (_)___ _/ ___/(_) /___  / / / /___  / /___  ____ _____/ /__  _____",
+        "  / /|_/ / _ \\/ __  / / __ `/\\__ \\/ / / __ \\/ / / / __ \\/ / __ \\/ __ `/ __  / _ \\/ ___/",
+        " / /  / /  __/ /_/ / / /_/ /___/ / / / /_/ / /_/ / /_/ / / /_/ / /_/ / /_/ /  __/ /    ",
+        "/_/  /_/\\___/\\____/_/\\____//____/_/_/\\____/\\____/ .___/_/\\____/\\____/\\____/\\___/_/     ",
+        "                                               /_/                               ",
+        "                                                                                 "
+    };
+
+    private final String[] logo = logo3;
+
     public SimpleDisplay(List<Export> exports) {
         this.exports = exports;
-        this.incomings = new ArrayList<>();
     }
 
     @Override
@@ -68,11 +92,13 @@ public class SimpleDisplay implements Display {
     private String render() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("\u001B[1m" + "\u001B[34m");
-        sb.append(logo[0] + "\n");
-        sb.append(logo[1] + "\n");
-        sb.append(logo[2] + "\n");
-        sb.append("\u001B[0m");
+        sb.append(Util.ANSI_RESET);
+
+        sb.append(Util.ANSI_BOLD_HIGH_INTENSITY_BLUE);
+        for (String line : logo) {
+            sb.append(line + "\n");
+        }
+        sb.append(Util.ANSI_RESET);
 
 
         sb.append("\u001B[4m");
@@ -81,7 +107,7 @@ public class SimpleDisplay implements Display {
         );
         sb.append("\u001B[0m" + "\n");
         for (Export export : exports) {
-            String timeToLive = " | --:--:--";
+            String timeToLive;
             try {
                 LocalDateTime now = LocalDateTime.now();
                 LocalDateTime timeOfDeath = export.getTimeOfDeath();
@@ -96,7 +122,7 @@ public class SimpleDisplay implements Display {
 
 
             sb.append(
-                    String.format("%40s |       %3d%% |     %3d%% |       %3d%% |",
+                    String.format("%s |       %3d%% |     %3d%% |       %3d%% |",
                             export.toSubString(40),
                             export.getLocalTranscodeProgress(),
                             export.getUploadProgress(),
@@ -109,23 +135,20 @@ public class SimpleDisplay implements Display {
             sb.append("\n");
         }
 
-        if (!incomings.isEmpty()) {
-            Iterator<Export> iterator = incomings.iterator();
-            while (iterator.hasNext()) {
-                Export incoming = iterator.next();
-                String timeToLive = "  | --:--:--";
-                sb.append(
-                        String.format("%40s |        %3d |      %3d |        %3d |",
-                                incoming.toSubString(40),
-                                incoming.getLocalTranscodeProgress(),
-                                incoming.getUploadProgress(),
-                                incoming.getRemoteTranscodeProgress()
-                        )
-                                + (incoming.isEmailSent() ? "    Ja    " : "    Nee   ")
-                                + timeToLive
-                );
-                iterator.remove();
-            }
+        Incoming[] incomings = Main.getWatchfolder().getAll();
+
+
+        for (Incoming incoming : incomings) {
+            if (incoming.isHidden()) continue;
+            sb.append(
+                    String.format("%40s |       %3d%% |     %3d%% |       %3d%% |",
+                            incoming.toSubString(40),
+                            incoming.getLocalTranscodeProgress(),
+                            incoming.getUploadProgress(),
+                            incoming.getRemoteTranscodeProgress()
+                    )
+            );
+            sb.append("\n");
         }
 
 
@@ -186,8 +209,4 @@ public class SimpleDisplay implements Display {
     }
 
 
-    public void addIncoming(Incoming incoming) {
-        if (incomings.contains(incoming)) return;
-        incomings.add(incoming);
-    }
 }
