@@ -206,25 +206,31 @@ public class Export {
     }
 
     public void moveFiles(String destinationDir) throws IOException {
-            Path destinationPath = Paths.get(destinationDir);
+        Path destinationPath = Paths.get(destinationDir);
 
-            if (!Files.exists(destinationPath)) {
-                Files.createDirectories(destinationPath);
-            }
+        if (!Files.exists(destinationPath)) {
+            Files.createDirectories(destinationPath);
+        }
 
-            Path sourceFilePath = this.inputFile.toPath();
-            Path destinationFilePath = destinationPath.resolve(this.inputFile.getName());
-            Files.move(sourceFilePath, destinationFilePath);
+        Path sourceInputFilePath = this.inputFile.toPath();
+        Path destinationInputFilePath = destinationPath.resolve(this.inputFile.getName());
+        Files.move(sourceInputFilePath, destinationInputFilePath);
 
-            if (this.outputFile != null && this.outputFile.exists()) {
-                Path sourceOutputFilePath = this.outputFile.toPath();
-                Path destinationOutputFilePath = destinationPath.resolve(this.outputFile.getName());
-                Files.move(sourceOutputFilePath, destinationOutputFilePath);
-            }
+        this.inputFile = new File(destinationInputFilePath.toString());
 
-            this.outputFile = new File(destinationFilePath.toString());
-            this.inputFile = new File(destinationFilePath.toString());
-            Util.log("Bestanden verplaatst naar: " + destinationDir);
+        Path destinationOutputFilePath;
+        if (this.outputFile != null && this.outputFile.exists()) {
+            Path sourceOutputFilePath = this.outputFile.toPath();
+            destinationOutputFilePath = destinationPath.resolve(this.outputFile.getName());
+            Files.move(sourceOutputFilePath, destinationOutputFilePath);
+        } else {
+            destinationOutputFilePath = destinationPath.resolve(this.inputFile.getName()
+                    .replace(".mxf", ".mp4"));
+        }
+
+        this.outputFile = new File(destinationOutputFilePath.toString());
+
+        Util.log("Bestanden verplaatst naar: " + destinationDir);
 
 
     }
