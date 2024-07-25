@@ -8,8 +8,11 @@ import nl.alexflix.mediasilouploader.local.Watchfolder;
 import nl.alexflix.mediasilouploader.local.types.Exit;
 import nl.alexflix.mediasilouploader.local.types.Export;
 import nl.alexflix.mediasilouploader.remote.email.Emailer;
+import nl.alexflix.mediasilouploader.remote.mediasilo.UploadThread;
 import nl.alexflix.mediasilouploader.remote.mediasilo.Uploader;
+import nl.alexflix.mediasilouploader.remote.mediasilo.api.Project;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,8 @@ import java.util.Scanner;
 public class Main {
     public static Logger logger;
     private static Thread loggerThread;
+    private static Project[] projects;
+    private static Project defaultProject;
     private static Watchfolder watchfolder;
     public static Display display;
     private static Thread displayThread;
@@ -71,10 +76,23 @@ public class Main {
         loggerThread.setPriority(Thread.MIN_PRIORITY);
         loggerThread.start();
 
+        //Alle projecten ophalen
+        try {
+            Util.log("Projecten ophalen...");
+            projects = UploadThread.getAllProjects(mediaSiloAPIkey, mediaSiloAPIsecret).toArray(new Project[0]);
+            Util.success(projects.length + " projecten succesvol opgehaald");
+            for (int i = 0; i < projects.length; i++) {
+                Util.log("(" + (i + 1) + "/" + projects.length + ") " + projects[i].getName());
+                if (projects[i].getName().equalsIgnoreCase(projectNaam)) defaultProject = projects[i];
+            }
+        } catch (IOException e) {
+            Util.err("Kan projecten niet ophalen: " + e.getMessage());
+            Util.exceptions.add(e);
+        }
 
-        watchfolder = new Watchfolder(watchFolderPath, transcodeQueue, exports);
+        watchfolder = new Watchfolder(watchFolderPath, transcodeQueue, exports, defaultProject);
         watchfolderThread = new Thread(watchfolder);
-        watchfolderThread.setName("WatchfolderThread");
+        watchfolderThread.setName("WatchfolderThread-" + defaultProject.getName());
         watchfolderThread.start();
 
         Transcoder transcoder = new Transcoder(transcodeQueue, uploadQueue, ffmpegPath);

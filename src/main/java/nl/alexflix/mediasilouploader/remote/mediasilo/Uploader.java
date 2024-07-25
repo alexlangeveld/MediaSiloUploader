@@ -14,7 +14,6 @@ public class Uploader implements Runnable{
     private final LinkedBlockingQueue<Export> emailQueue;
     private final String apiKey;
     private final String apiSecret;
-    private String projectID;
     static int threadsRunning = 0;
     private boolean running = true;
 
@@ -23,16 +22,6 @@ public class Uploader implements Runnable{
         this.emailQueue = emailQueue;
         this.apiKey = apiKey;
         this.apiSecret = apiSecret;
-        try {
-            this.projectID = UploadThread.getProjectID(apiKey, apiSecret);
-        } catch (IOException e) {
-            Util.err("Kon projectID niet ophalen: " + e.getMessage());
-            Util.err("Uploaden kan niet gestart worden");
-            Main.exit();
-            Util.exceptions.add(e);
-
-        }
-
     }
 
 
@@ -54,6 +43,7 @@ public class Uploader implements Runnable{
                     }
 
                 }
+                String projectID = export.getProject().getId();
                 Thread uploadThread = new UploadThread(export, apiKey, apiSecret, projectID, emailQueue);
                 uploadThread.start();
                 threadsRunning++;

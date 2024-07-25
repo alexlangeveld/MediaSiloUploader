@@ -2,6 +2,7 @@ package nl.alexflix.mediasilouploader.local.types;
 
 import nl.alexflix.mediasilouploader.Util;
 import nl.alexflix.mediasilouploader.local.MediaInfo;
+import nl.alexflix.mediasilouploader.remote.mediasilo.api.Project;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class Export {
     private File inputFile;
     private Map<String, String> metadata;
     private String[] naamElementen;
+    private Project project;
     protected String naam;
     private File outputFile;
     private String assetID;
@@ -89,6 +91,14 @@ public class Export {
         }
 
         return result;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public Status Status() {

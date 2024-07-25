@@ -19,13 +19,13 @@ public class SimpleDisplay implements Display {
     public boolean running = true;
     public String tempStatus = "";
 
-    private final String[] logo1 = {
+    private static final String[] logo1 = {
             "|\\/| _  _|o _.(_ o| _  | |._ | _  _. _| _ ._ ",
             "|  |(/_(_||(_|__)||(_) |_||_)|(_)(_|(_|(/_|   ",
             "                          |                   "
     };
 
-    private final String[] logo2 = {
+    private static final String[] logo2 = {
             "=======================================================================================================================",
             "=  =====  ============  ==============      =======  =========  ====  =========  ===================  =================",
             "=   ===   ============  =============  ====  ======  =========  ====  =========  ===================  =================",
@@ -39,7 +39,7 @@ public class SimpleDisplay implements Display {
             "======================================================================================================================="
     };
 
-    private final String[] logo3 = {
+    private static final String[] logo3 = {
         "    __  ___         _         _____   __      __  __      __                __         ",
         "   /  |/  /__  ____/ (_)___ _/ ___/(_) /___  / / / /___  / /___  ____ _____/ /__  _____",
         "  / /|_/ / _ \\/ __  / / __ `/\\__ \\/ / / __ \\/ / / / __ \\/ / __ \\/ __ `/ __  / _ \\/ ___/",
@@ -49,7 +49,7 @@ public class SimpleDisplay implements Display {
         "                                                                                 "
     };
 
-    private final String[] logo = logo3;
+    private static final String[] logo = logo3;
 
     public SimpleDisplay(List<Export> exports) {
         this.exports = exports;
@@ -70,6 +70,7 @@ public class SimpleDisplay implements Display {
         inputThread.start();
 
         Main.verbose(false);
+        animate();
         while (running) {
             try {
                 Thread.sleep(2000);
@@ -191,7 +192,7 @@ public class SimpleDisplay implements Display {
         return inputThread;
     }
 
-    private void clearScreen() {
+    private static void clearScreen() {
         try {
             //System.out.println("Clearing Screen...");
             var clearCommand = System.getProperty("os.name").contains("Windows")
@@ -206,6 +207,51 @@ public class SimpleDisplay implements Display {
     @Override
     public void stop() {
         running = false;
+    }
+
+    private static void animate() {
+        clearScreen();
+        final int sleepTime = 10;
+        String[] ansiColors = {
+                Util.ANSI_BOLD_HIGH_INTENSITY_YELLOW,
+                Util.ANSI_BOLD_HIGH_INTENSITY_BLUE,
+                Util.ANSI_BOLD_HIGH_INTENSITY_GREEN,
+                Util.ANSI_BOLD_HIGH_INTENSITY_CYAN,
+                Util.ANSI_BOLD_HIGH_INTENSITY_PURPLE
+        };
+
+
+        System.out.println(Util.ANSI_BOLD_HIGH_INTENSITY_BLUE);
+        for (int i = 0; i < logo.length; i++) {
+            char[] chars = logo[i].toCharArray();
+            for (int j = 0 ; j < chars.length; j++) {
+                System.out.print(chars[j]);
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            System.out.println();
+        }
+        System.out.println(Util.ANSI_RESET);
+        clearScreen();
+
+        for (int i = 0; i < ansiColors.length; i++) {
+            System.out.println(ansiColors[i]);
+            for (int j = 0; j < logo.length; j++) {
+                System.out.println(logo[j]);
+            }
+
+            System.out.println();
+            try {
+                Thread.sleep(sleepTime * 40);
+            } catch (InterruptedException ignored) {
+            }
+            clearScreen();
+        }
+        clearScreen();
+        System.out.println(Util.ANSI_RESET);
+        System.out.println("Loading...");
     }
 
 
