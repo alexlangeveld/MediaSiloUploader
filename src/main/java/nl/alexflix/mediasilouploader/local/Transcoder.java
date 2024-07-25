@@ -4,7 +4,9 @@ import nl.alexflix.mediasilouploader.local.types.Exit;
 import nl.alexflix.mediasilouploader.local.types.Export;
 import nl.alexflix.mediasilouploader.Util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -21,7 +23,14 @@ public class Transcoder implements Runnable {
         this.transcodeQueue = transcodeQueue;
         this.uploadQueue = uploadQueue;
         this.ffmpegPath = ffmpegPath;
-        this.videoCodec = "hevc_nvenc";
+        if (checkEncoder("hevc_nvenc")) {
+            Util.log("HEVC_NVENC gevonden, hardware versnelling ingeschakeld...");
+            this.videoCodec = "hevc_nvenc";
+        } else {
+            Util.err("HEVC_NVENC codec niet gevonden. Gebruik codec 'libx265'");
+            this.videoCodec = "libx265";
+        }
+
     }
 
     @Override
@@ -164,5 +173,58 @@ public class Transcoder implements Runnable {
         return cmd.toArray(new String[]{});
     }
 
+    private boolean checkEncoder(String encoder) {
+        try {
+            // Execute the ffmpeg command to list encoders
+            String command = ffmpegPath + " -encoders";
+            Process process = Runtime.getRuntime().exec(command);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+
+            boolean encoderListed = false;
+            while ((line = reader.readLine()) != null) {
+                // Check if the line contains 'hevc_nvenc'
+                if (line.contains(encoder)) {
+                    encoderListed = true;
+                    break;
+                }
+            }
+
+            if (!encoderListed) {
+                return false;
+            }
+
+            // Attempt to encode a test video to verify actual hardware support
+            String[] testCommand = {
+                    ffmpegPath,
+                    "-f", "lavfi",
+                    "-i", "nullsrc=s=512x512:d=1",
+                    "-c:v", encoder,
+                    "-f", "null",
+                    "-"
+            };
+
+            Process testProcess = Runtime.getRuntime().exec(testCommand);
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(testProcess.getErrorStream()));
+
+            boolean hardwareSupport = true;
+            while ((line = errorReader.readLine()) != null) {
+                if (line.contains("No NVENC capable devices found")) {
+                    hardwareSupport = false;
+                    break;
+                }
+            }
+
+            int exitValue = testProcess.waitFor();
+            if (exitValue != 0 && hardwareSupport) {
+                Util.err("ffmpeg command exited with error code: " + exitValue);
+            }
+
+            return hardwareSupport;
+        } catch (IOException | InterruptedException e) {
+            Util.err("Error checking encoder: " + e.getMessage());
+        }
+        return false;
+    }
 
 }
