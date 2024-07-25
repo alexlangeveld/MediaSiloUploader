@@ -7,11 +7,13 @@ import nl.alexflix.mediasilouploader.local.Transcoder;
 import nl.alexflix.mediasilouploader.local.Watchfolder;
 import nl.alexflix.mediasilouploader.local.types.Exit;
 import nl.alexflix.mediasilouploader.local.types.Export;
+import nl.alexflix.mediasilouploader.local.types.Incoming;
 import nl.alexflix.mediasilouploader.remote.email.Emailer;
 import nl.alexflix.mediasilouploader.remote.mediasilo.UploadThread;
 import nl.alexflix.mediasilouploader.remote.mediasilo.Uploader;
 import nl.alexflix.mediasilouploader.remote.mediasilo.api.Project;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,7 @@ public class Main {
     private static Project[] projects;
     private static Project defaultProject;
     private static Watchfolder watchfolder;
+    private static volatile ArrayList<Incoming> incomings;
     public static Display display;
     private static Thread displayThread;
     private static Thread watchfolderThread;
@@ -40,7 +43,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        System.out.println("MediaSiloUploader v0.2.1");
+        System.out.println("MediaSiloUploader v0.2.2");
 
         Map<String, String> envVars = System.getenv();
         if (envVars.containsKey("APIkey") && envVars.containsKey("APIsecret")) {
@@ -217,8 +220,21 @@ public class Main {
         return projectNaam;
     }
 
-    public static Watchfolder getWatchfolder() {
-        return watchfolder;
+    public static Incoming[] getAllIncoming() {
+        if (incomings == null) return new Incoming[0];
+        return incomings.toArray(new Incoming[0]);
+    }
+    public static void addIncoming(File incomingFile) {
+        if (incomings == null) incomings = new ArrayList<>();
+        Incoming incoming = new Incoming(incomingFile);
+        if (incomings.contains(incoming)) return;
+        incomings.add(incoming);
+    }
+    public static void removeIncoming(File file) {
+        if (incomings == null) return;
+        Incoming incoming = new Incoming(file);
+        if (!incomings.contains(incoming)) return;
+        incomings.remove(incoming);
     }
 
     public static boolean queuesEmpty() {

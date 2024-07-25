@@ -136,7 +136,7 @@ public class SimpleDisplay implements Display {
             sb.append("\n");
         }
 
-        Incoming[] incomings = Main.getWatchfolder().getAll();
+        Incoming[] incomings = Main.getAllIncoming();
 
 
         for (Incoming incoming : incomings) {

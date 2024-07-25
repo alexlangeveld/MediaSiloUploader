@@ -2,6 +2,7 @@ package nl.alexflix.mediasilouploader.local;
 
 
 
+import nl.alexflix.mediasilouploader.Main;
 import nl.alexflix.mediasilouploader.local.types.Exit;
 import nl.alexflix.mediasilouploader.local.types.Export;
 import nl.alexflix.mediasilouploader.Util;
@@ -23,7 +24,7 @@ public class Watchfolder implements Runnable{
     List<Export> exports;
     LinkedBlockingQueue<Export> transCodeQueue;
     //Timer timer;
-    private IncomingQueue incomingQueue;
+
 
     public Watchfolder(String path, LinkedBlockingQueue<Export> transCodeQueue, List<Export> exports, Project project) {
         this.transCodeQueue = transCodeQueue;
@@ -39,7 +40,6 @@ public class Watchfolder implements Runnable{
         if (!this.path.isDirectory()) this.path.mkdir();
         if (!this.inProgresPath.isDirectory()) inProgresPath.mkdir();
         if (!this.donePath.isDirectory()) donePath.mkdir();
-        this.incomingQueue = new IncomingQueue();
     }
 
     @Override
@@ -52,7 +52,7 @@ public class Watchfolder implements Runnable{
                 if (files != null) {
                     for (File file : files) {
                         if (file.isFile() && isFileReady(file)) {
-                            incomingQueue.remove(file);
+                            Main.removeIncoming(file);
                             File newFile = new File(inProgresPath.getPath() + File.separator + file.getName());
                             if (file.renameTo(newFile)) {
                                 Util.success("Bestand verplaatst naar " + newFile.getPath());
@@ -64,7 +64,7 @@ public class Watchfolder implements Runnable{
                                 Util.log("Kon bestand niet verplaatsen: " + file.getName());
                             }
                         } else if (file.isFile() && !isFileReady(file)) {
-                            incomingQueue.add(file);
+                            Main.addIncoming(file);
                         }
                     }
                 }
@@ -90,9 +90,9 @@ public class Watchfolder implements Runnable{
         return MediaInfo.isClosed(file.getPath());
     }
 
-    public synchronized Incoming[] getAll() {
-        return incomingQueue.getAll();
-    }
+//    public synchronized Incoming[] getAll() {
+//        return incomingQueue.getAll();
+//    }
 
     public File getDonePath() {
         return donePath;
@@ -106,27 +106,27 @@ public class Watchfolder implements Runnable{
 
 }
 
-class IncomingQueue {
-    private volatile ArrayList<Incoming> queue;
-
-    IncomingQueue() {
-        this.queue = new ArrayList<>();
-    }
-
-
-    void add(File file) {
-        Incoming incoming = new Incoming(file);
-        if (queue.contains(incoming)) return;
-        queue.add(incoming);
-    }
-
-    void remove(File file) {
-        Incoming incoming = new Incoming(file);
-        if (!queue.contains(incoming)) return;
-        queue.remove(incoming);
-    }
-    Incoming[] getAll() {
-        return queue.toArray(new Incoming[0]);
-    }
-
-}
+//class IncomingQueue {
+//    private volatile ArrayList<Incoming> queue;
+//
+//    IncomingQueue() {
+//        this.queue = new ArrayList<>();
+//    }
+//
+//
+//    void add(File file) {
+//        Incoming incoming = new Incoming(file);
+//        if (queue.contains(incoming)) return;
+//        queue.add(incoming);
+//    }
+//
+//    void remove(File file) {
+//        Incoming incoming = new Incoming(file);
+//        if (!queue.contains(incoming)) return;
+//        queue.remove(incoming);
+//    }
+//    Incoming[] getAll() {
+//        return queue.toArray(new Incoming[0]);
+//    }
+//
+//}
