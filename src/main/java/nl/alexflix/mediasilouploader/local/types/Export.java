@@ -2,6 +2,7 @@ package nl.alexflix.mediasilouploader.local.types;
 
 import nl.alexflix.mediasilouploader.Util;
 import nl.alexflix.mediasilouploader.local.MediaInfo;
+import nl.alexflix.mediasilouploader.remote.mediasilo.api.Project;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class Export {
     private File inputFile;
     private Map<String, String> metadata;
     private String[] naamElementen;
+    private Project project;
     protected String naam;
     private File outputFile;
     private String assetID;
@@ -89,6 +91,14 @@ public class Export {
         }
 
         return result;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public Status Status() {
@@ -196,25 +206,31 @@ public class Export {
     }
 
     public void moveFiles(String destinationDir) throws IOException {
-            Path destinationPath = Paths.get(destinationDir);
+        Path destinationPath = Paths.get(destinationDir);
 
-            if (!Files.exists(destinationPath)) {
-                Files.createDirectories(destinationPath);
-            }
+        if (!Files.exists(destinationPath)) {
+            Files.createDirectories(destinationPath);
+        }
 
-            Path sourceFilePath = this.inputFile.toPath();
-            Path destinationFilePath = destinationPath.resolve(this.inputFile.getName());
-            Files.move(sourceFilePath, destinationFilePath);
+        Path sourceInputFilePath = this.inputFile.toPath();
+        Path destinationInputFilePath = destinationPath.resolve(this.inputFile.getName());
+        Files.move(sourceInputFilePath, destinationInputFilePath);
 
-            if (this.outputFile != null && this.outputFile.exists()) {
-                Path sourceOutputFilePath = this.outputFile.toPath();
-                Path destinationOutputFilePath = destinationPath.resolve(this.outputFile.getName());
-                Files.move(sourceOutputFilePath, destinationOutputFilePath);
-            }
+        this.inputFile = new File(destinationInputFilePath.toString());
 
-            this.outputFile = new File(destinationFilePath.toString());
-            this.inputFile = new File(destinationFilePath.toString());
-            Util.log("Bestanden verplaatst naar: " + destinationDir);
+        Path destinationOutputFilePath;
+        if (this.outputFile != null && this.outputFile.exists()) {
+            Path sourceOutputFilePath = this.outputFile.toPath();
+            destinationOutputFilePath = destinationPath.resolve(this.outputFile.getName());
+            Files.move(sourceOutputFilePath, destinationOutputFilePath);
+        } else {
+            destinationOutputFilePath = destinationPath.resolve(this.inputFile.getName()
+                    .replace(".mxf", ".mp4"));
+        }
+
+        this.outputFile = new File(destinationOutputFilePath.toString());
+
+        Util.log("Bestanden verplaatst naar: " + destinationDir);
 
 
     }

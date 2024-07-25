@@ -69,6 +69,7 @@ class cleanerThread extends Thread {
 
     @Override
     public void run() {
+
         while (running) {
             LocalDateTime now = LocalDateTime.now();
             if (now.isAfter(deletaAt) || deleteImmediately) {
