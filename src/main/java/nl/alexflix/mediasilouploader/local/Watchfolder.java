@@ -77,7 +77,7 @@ public class Watchfolder implements Runnable{
                 Util.err("Watchfolder: " + e.getMessage());
             }
         }
-        Util.success("Watchfolder gestopt");
+        Util.success(Thread.currentThread().getName() + " gestopt");
 
 
     }

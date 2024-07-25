@@ -15,22 +15,19 @@ import nl.alexflix.mediasilouploader.remote.mediasilo.api.Project;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.Scanner;
 
 public class Main {
     public static Logger logger;
     private static Thread loggerThread;
     private static Project[] projects;
     private static Project defaultProject;
-    private static Watchfolder watchfolder;
+    private static Watchfolder[] watchfolders;
     private static volatile ArrayList<Incoming> incomings;
     public static Display display;
     private static Thread displayThread;
-    private static Thread watchfolderThread;
+    private static Thread[] watchfolderThreads;
     public static final List<Export> exports = new ArrayList<>();
     private static final LinkedBlockingQueue<Export> transcodeQueue = new LinkedBlockingQueue<>();
     private static Thread transcoderThread;
@@ -93,10 +90,15 @@ public class Main {
             Util.exceptions.add(e);
         }
 
-        watchfolder = new Watchfolder(watchFolderPath, transcodeQueue, exports, defaultProject);
-        watchfolderThread = new Thread(watchfolder);
-        watchfolderThread.setName("WatchfolderThread-" + defaultProject.getName());
-        watchfolderThread.start();
+        watchfolders = new Watchfolder[projects.length];
+        watchfolderThreads = new Thread[watchfolders.length];
+
+        for (int i = 0; i < watchfolders.length; i++) {
+            watchfolders[i] = new Watchfolder(watchFolderPath, transcodeQueue, exports, projects[i]);
+            watchfolderThreads[i] = new Thread(watchfolders[i]);
+            watchfolderThreads[i].setName("Watchfolder" + (i + 1) + " voor " + projects[i].getName());
+            watchfolderThreads[i].start();
+        }
 
         Transcoder transcoder = new Transcoder(transcodeQueue, uploadQueue, ffmpegPath);
         transcoderThread = new Thread(transcoder);
@@ -113,7 +115,7 @@ public class Main {
         emailerThread.setName("EmailerThread");
         emailerThread.start();
 
-        Cleaner cleaner = new Cleaner(doneQueue, watchfolder.getDonePath().toString());
+        Cleaner cleaner = new Cleaner(doneQueue, (watchFolderPath + File.separator + ".done"));
         cleanerThread = new Thread(cleaner);
         cleanerThread.setName("CleanerThread");
         cleanerThread.start();
@@ -125,7 +127,14 @@ public class Main {
 
 
         //waitForQuit(watchfolder, watchfolderThread, transcoderThread, uploaderThread, emailerThread);
-        waitForQuit(watchfolderThread, transcoderThread, uploaderThread, emailerThread, displayThread);
+        List<Thread> allThreads = new ArrayList<>();
+        allThreads.add(transcoderThread);
+        allThreads.add(uploaderThread);
+        allThreads.add(emailerThread);
+        allThreads.add(cleanerThread);
+        allThreads.add(displayThread);
+        allThreads.addAll(Arrays.asList(watchfolderThreads));
+        waitForQuit(allThreads.toArray(new Thread[0]));
         Util.printAll();
 
         logger.stop();
@@ -136,17 +145,6 @@ public class Main {
         }
     }
 
-    private static void waitForQuit(Watchfolder watchfolder, Thread... threads) {
-        Scanner scanner = new Scanner(System.in);
-        while (!exit) {
-            if (scanner.nextLine().equalsIgnoreCase("EXIT")) {
-                Util.success("Afsluiten...");
-                exit(watchfolder, threads);
-
-            }
-        }
-        scanner.close();
-    }
 
     private static void waitForQuit(Thread... threads) {
         for (Thread thread : threads) {
@@ -161,16 +159,16 @@ public class Main {
     }
 
     public static void exit() {
-        exit(watchfolder, watchfolderThread, transcoderThread, uploaderThread, emailerThread, cleanerThread);
+        exit(watchfolders, transcoderThread, uploaderThread, emailerThread, cleanerThread);
     }
 
-    public static void exit(Watchfolder watchfolder,
-                               Thread... threads) {
+    public static void exit(Watchfolder[] watchfolders, Thread... threads) {
         try {
 
             Main.exit = true;
-
-            watchfolder.stop();
+            for (Watchfolder watchfolder : watchfolders) {
+                watchfolder.stop();
+            }
             Export exit = new Exit();
             exports.add(exit);
             transcodeQueue.put(exit);
