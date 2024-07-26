@@ -142,11 +142,8 @@ public class SimpleDisplay implements Display {
         for (Incoming incoming : incomings) {
             if (incoming.isHidden()) continue;
             sb.append(
-                    String.format("%40s |       %3d%% |     %3d%% |       %3d%% |",
-                            incoming.toSubString(40),
-                            incoming.getLocalTranscodeProgress(),
-                            incoming.getUploadProgress(),
-                            incoming.getRemoteTranscodeProgress()
+                    String.format("%40s |                                  ",
+                            incoming.toSubString(40)
                     )
             );
             sb.append("\n");
