@@ -10,6 +10,7 @@ import nl.alexflix.mediasilouploader.local.types.Incoming;
 import nl.alexflix.mediasilouploader.remote.mediasilo.api.Project;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -40,6 +41,9 @@ public class Watchfolder implements Runnable{
         if (!this.path.isDirectory()) this.path.mkdir();
         if (!this.inProgresPath.isDirectory()) inProgresPath.mkdir();
         if (!this.donePath.isDirectory()) donePath.mkdir();
+
+        makeHidden(donePath);
+        makeHidden(inProgresPath);
     }
 
     @Override
@@ -104,29 +108,18 @@ public class Watchfolder implements Runnable{
     }
 
 
+    private void makeHidden(File file) {
+        if (!(System.getProperty("os.name").toLowerCase().contains("win"))) return;
+        if (file.exists()) {
+            try {
+                ProcessBuilder pb = new ProcessBuilder("attrib", "+H", file.getAbsolutePath());
+                pb.start().waitFor();
+            } catch (IOException | InterruptedException e) {
+                Util.err("Watchfolder::makeHidden: " + e.getMessage());;
+            }
+        }
+    }
+
 }
 
-//class IncomingQueue {
-//    private volatile ArrayList<Incoming> queue;
-//
-//    IncomingQueue() {
-//        this.queue = new ArrayList<>();
-//    }
-//
-//
-//    void add(File file) {
-//        Incoming incoming = new Incoming(file);
-//        if (queue.contains(incoming)) return;
-//        queue.add(incoming);
-//    }
-//
-//    void remove(File file) {
-//        Incoming incoming = new Incoming(file);
-//        if (!queue.contains(incoming)) return;
-//        queue.remove(incoming);
-//    }
-//    Incoming[] getAll() {
-//        return queue.toArray(new Incoming[0]);
-//    }
-//
-//}
+
