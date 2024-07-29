@@ -2,18 +2,19 @@ package nl.alexflix.mediasilouploader.remote.mediasilo;
 
 import nl.alexflix.mediasilouploader.Util;
 import nl.alexflix.mediasilouploader.local.types.Export;
+import nl.alexflix.mediasilouploader.remote.mediasilo.api.MultiPartUploadTicket;
 import nl.alexflix.mediasilouploader.remote.mediasilo.api.UploadTicket;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class MultiPartUploadThread extends UploadThread {
 
-    UploadTicket uploadTicket;
 
     public MultiPartUploadThread(Export export, String APIkey, String APIsecret, String projectID, LinkedBlockingQueue<Export> emailQueue) {
         super(export, APIkey, APIsecret, projectID, emailQueue);
@@ -66,11 +67,64 @@ public class MultiPartUploadThread extends UploadThread {
             throw new IOException("Kon geen uploadTicket voor " + export + " aanmaken: " + ticketResponse);
         }
 
-        this.uploadTicket = new UploadTicket(ticketResponse);
+        super.uploadTicket = new MultiPartUploadTicket(ticketResponse);
     }
 
     @Override
     protected void uploadFile() throws IOException {
-        super.uploadFile();
+        MultiPartUploadTicket uploadTicket;
+        if (!(super.uploadTicket instanceof MultiPartUploadTicket)) {
+            throw new IOException("uploadTicket is geen MultiPartUploadTicket");
+        } else {
+            uploadTicket = (MultiPartUploadTicket) super.uploadTicket;
+            String filePath = multiPartUploadTicket.getFilePath();
+        }
+        String fileName = uploadTicket.getFileName();
+        String assetUrl = uploadTicket.getAssetUrl();
+        String expiration = Long.toString(uploadTicket.getExpiration());
+        String accessKey = uploadTicket.getAccessKey();
+        String secretKey = uploadTicket.getSecretKey();
+        String sessionId = uploadTicket.getSessionId();
+        String sessionToken = uploadTicket.getSessionToken();
+        String objectKey = uploadTicket.getObjectKey();
+        String bucketName = uploadTicket.getBucketName();
+
+        System.out.println("\nsuper.uploadTicket: " + super.uploadTicket);
+
+        globalSessionId = sessionId;
+
+        File uploadFile = new File(filePath);
+
+        BasicSessionCredentials sessionCredentials = new BasicSessionCredentials(
+                accessKey, secretKey, sessionToken);
+
+        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(sessionCredentials))
+                .build();
+
+        TransferManager tm = TransferManagerBuilder.standard()
+                .withS3Client(s3Client)
+                .build();
+
+        PutObjectRequest request = new PutObjectRequest(bucketName, objectKey, new FileInputStream(uploadFile), null);
+
+        Upload upload = tm.upload(request);
+
+        upload.addProgressListener(new ProgressListener() {
+            public void progressChanged(ProgressEvent progressEvent) {
+                System.out.println(progressEvent);
+            }
+        });
+
+        try {
+            UploadResult uploadResult = upload.waitForUploadResult();
+            createAsset(assetUrl);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        tm.shutdownNow(false);
     }
+
+}
 }
