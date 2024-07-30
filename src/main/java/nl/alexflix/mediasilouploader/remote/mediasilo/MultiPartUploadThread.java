@@ -72,7 +72,6 @@ public class MultiPartUploadThread extends UploadThread {
             throw new IOException("uploadTicket is geen MultiPartUploadTicket");
         } else {
             uploadTicket = (MultiPartUploadTicket) super.uploadTicket;
-            String filePath = export.OutputFile().getAbsolutePath();
         }
         String accessKey = uploadTicket.getAccessKey();
         String secretKey = uploadTicket.getSecretKey();
@@ -83,7 +82,6 @@ public class MultiPartUploadThread extends UploadThread {
 
         Util.log("\nsuper.uploadTicket: " + super.uploadTicket);
 
-        String globalSessionId = sessionId;
         Regions region = Regions.US_EAST_1;
 
         File uploadFile = export.OutputFile();
@@ -123,7 +121,6 @@ public class MultiPartUploadThread extends UploadThread {
         try {
             UploadResult uploadResult = upload.waitForUploadResult();
         } catch (InterruptedException e) {
-            e.printStackTrace();
             Util.err(e);
         }
 
