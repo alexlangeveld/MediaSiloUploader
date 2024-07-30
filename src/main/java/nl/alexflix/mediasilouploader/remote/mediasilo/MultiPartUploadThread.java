@@ -34,25 +34,6 @@ public class MultiPartUploadThread extends UploadThread {
         super(export, APIkey, APIsecret, projectID, emailQueue);
     }
 
-    private void MultiPartUploadFile() {
-
-    }
-
-//    @Override
-//    boolean upload(Export export) {
-//        try {
-//            createUploadTicket();
-//            uploadFile();
-//            createAsset();
-//            checkEncodingProgress();
-//            createReviewLink();
-//        } catch (IOException | RuntimeException e) {
-//            e.printStackTrace();
-//            Util.err("Upload mislukt: " + e.getMessage());
-//            return false;
-//        }
-//        return true;
-//    }
 
     @Override
     void createUploadTicket() throws IOException {
@@ -93,9 +74,6 @@ public class MultiPartUploadThread extends UploadThread {
             uploadTicket = (MultiPartUploadTicket) super.uploadTicket;
             String filePath = export.OutputFile().getAbsolutePath();
         }
-        String fileName = uploadTicket.getFileName();
-        String assetUrl = uploadTicket.getAssetUrl();
-        String expiration = Long.toString(uploadTicket.getExpiration());
         String accessKey = uploadTicket.getAccessKey();
         String secretKey = uploadTicket.getSecretKey();
         String sessionId = uploadTicket.getSessionId();
@@ -129,12 +107,15 @@ public class MultiPartUploadThread extends UploadThread {
 
         upload.addProgressListener(new ProgressListener() {
             private long bytesTransferred = 0;
-
+            private int progressPercentage = 0;
             public void progressChanged(ProgressEvent progressEvent) {
                 bytesTransferred += progressEvent.getBytesTransferred();
                 int progressPercentage = (int) ((bytesTransferred * 100) / totalBytes);
-                export.setUploadProgress(progressPercentage);
-                Util.s3log("Upload progress: " + progressPercentage + "%");
+                if (progressPercentage > this.progressPercentage) {
+                    this.progressPercentage = progressPercentage;
+                    export.setUploadProgress(progressPercentage);
+                    Util.s3log("Upload progress: " + progressPercentage + "%");
+                }
             }
         });
 
