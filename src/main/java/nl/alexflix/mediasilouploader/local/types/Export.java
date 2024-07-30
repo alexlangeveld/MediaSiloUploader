@@ -48,6 +48,7 @@ public class Export {
     private boolean TC = true;
     private boolean HQ = false;
     private boolean downloadbaar = true;
+    private boolean sendEmail = true;
     private String link;
 
     public Export(File inputFile) {
@@ -63,6 +64,7 @@ public class Export {
             if (naamElementen[i].equalsIgnoreCase("downloadbaar")) downloadbaar = true;
             if (naamElementen[i].equalsIgnoreCase("nietDownloadbaar")) downloadbaar = false;
             if (naamElementen[i].equalsIgnoreCase("hq")) HQ = true;
+            if (naamElementen[i].equalsIgnoreCase("noEmail")) sendEmail = false;
         }
         Util.log("Nieuwe export aangemaakt: " + naam);
         this.status = Status.QUEUED_TRANSCODE_LOCAL;
@@ -279,5 +281,9 @@ public class Export {
 
     public void setEmailSent(boolean emailSent) {
         this.emailSent = emailSent;
+    }
+
+    public boolean sendEmail() {
+        return sendEmail;
     }
 }

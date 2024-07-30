@@ -40,13 +40,13 @@ public class Main {
 
 
     public static void main(String[] args) {
-        System.out.println("MediaSiloUploader v0.2.2");
+        System.out.println("MediaSiloUploader v0.2.3");
 
         Map<String, String> envVars = System.getenv();
         if (envVars.containsKey("APIkey") && envVars.containsKey("APIsecret")) {
             mediaSiloAPIkey = envVars.get("APIkey");
             mediaSiloAPIsecret = envVars.get("APIsecret");
-        }
+        } else Util.err("APIkey en/of APIsecret niet gevonden in de Environment Variables");
 
         if (envVars.containsKey("emailTemplate")) emailTemplatePath = envVars.get("emailTemplate");
 
