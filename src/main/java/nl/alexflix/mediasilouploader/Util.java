@@ -114,12 +114,32 @@ public class Util {
         Main.logger.add("[HTTP] " + message);
     }
 
+    public static void s3log(@Nullable String message) {
+        message = sanitize(message);
+        if (Main.verbose()) System.out.println(ANSI_YELLOW + "[HTTP] " + ANSI_RESET + message);
+        httpLog.add(ANSI_YELLOW + "[AWS3] " + ANSI_RESET + message);
+        allLogs.add("[AWS3] " + LocalDateTime.now() + " :  " + message);
+        Main.logger.add("[AWS3] " + message);
+    }
+
     public static void err(String message) {
         message = sanitize(message);
         System.out.println(ANSI_WHITE_ON_RED + "[ERR]" + ANSI_RESET + " " + ANSI_RED + message + ANSI_RESET);
         errors.add(ANSI_WHITE_ON_RED + "[ERR]" + ANSI_RESET + " " + ANSI_RED + message + ANSI_RESET);
         logs.add(ANSI_WHITE_ON_RED + "[ERR]" + ANSI_RESET + " " + ANSI_RED + message + ANSI_RESET);
         allLogs.add("[ERR]  " + LocalDateTime.now() + " :  " + message);
+        Main.logger.add("[ERR]  " + message);
+    }
+
+    public static void err(Exception e) {
+        String message = sanitize(e.getMessage());
+        System.out.println(ANSI_WHITE_ON_RED + "[ERR]" + ANSI_RESET + " " + ANSI_RED + message + ANSI_RESET);
+        errors.add(ANSI_WHITE_ON_RED + "[ERR]" + ANSI_RESET + " " + ANSI_RED + message + ANSI_RESET);
+        logs.add(ANSI_WHITE_ON_RED + "[ERR]" + ANSI_RESET + " " + ANSI_RED + message + ANSI_RESET);
+        allLogs.add("[ERR]  " + LocalDateTime.now() + " :  " + message);
+        for (StackTraceElement element : e.getStackTrace()) {
+            allLogs.add("[ERR]  " + LocalDateTime.now() + " :  " + element.toString());
+        }
         Main.logger.add("[ERR]  " + message);
     }
 

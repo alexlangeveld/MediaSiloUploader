@@ -53,13 +53,17 @@ public class UploadThread extends Thread{
             } catch (InterruptedException e) {
                 Util.err("Kon bestand niet toevoegen aan e-mail wachtrij: " + e.getMessage());
             }
+        } else {
+            Util.err("Upload van " + export + " mislukt");
         }
         Uploader.threadsRunning--;
     }
 
     boolean upload(Export export) {
         try {
-            checkIfFileNotBiggerThan5GB();
+            if (export.checkIfFileBiggerThanXGB(5)) {
+                throw new RuntimeException("Bestand is groter dan 5GB");
+            }
             createUploadTicket();
             uploadFile();
             createAsset();
@@ -68,16 +72,15 @@ public class UploadThread extends Thread{
         } catch (IOException | RuntimeException e) {
             e.printStackTrace();
             Util.err("Upload mislukt: " + e.getMessage());
+            for (StackTraceElement element : e.getStackTrace()) {
+                Util.err(element.toString());
+            }
             return false;
         }
         return true;
     }
 
-    private void checkIfFileNotBiggerThan5GB() {
-        if (export.OutputFile().length() > 5L * 1024 * 1024 * 1024) {
-            throw new IllegalArgumentException("Bestand is groter dan 5GB");
-        } else Util.log(export + " is kleiner dan 5GB");
-    }
+
 
     void createUploadTicket() throws IOException {
         MediaType mediaType = MediaType.parse("application/json");
@@ -104,7 +107,7 @@ public class UploadThread extends Thread{
         if (!ticketResponse.isSuccessful()) {
             throw new IOException("Kon geen uploadTicket voor " + export + " aanmaken: " + ticketResponse);
         }
-
+        Util.success("UploadTicket voor " + export + " succesvol aangemaakt");
         this.uploadTicket = new UploadTicket(ticketResponse);
 
     }

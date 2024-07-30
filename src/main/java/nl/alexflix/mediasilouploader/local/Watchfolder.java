@@ -42,8 +42,8 @@ public class Watchfolder implements Runnable{
         if (!this.inProgresPath.isDirectory()) inProgresPath.mkdir();
         if (!this.donePath.isDirectory()) donePath.mkdir();
 
-        makeHidden(donePath);
-        makeHidden(inProgresPath);
+        makeHidden(this.donePath);
+        makeHidden(this.inProgresPath);
     }
 
     @Override
@@ -109,17 +109,19 @@ public class Watchfolder implements Runnable{
 
 
     private void makeHidden(File file) {
-        if (!(System.getProperty("os.name").toLowerCase().contains("win"))) return;
+        if (!System.getProperty("os.name").toLowerCase().contains("win")) return;
         if (file.exists()) {
             try {
                 ProcessBuilder pb = new ProcessBuilder("attrib", "+H", file.getAbsolutePath());
-                pb.start().waitFor();
+                pb.start().waitFor(10000, java.util.concurrent.TimeUnit.MILLISECONDS);
             } catch (IOException | InterruptedException e) {
-                Util.err("Watchfolder::makeHidden: " + e.getMessage());;
+                Util.err("Watchfolder::makeHidden: " + e.getMessage());
             }
         }
     }
 
+
 }
+
 
 
