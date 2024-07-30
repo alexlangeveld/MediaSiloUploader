@@ -73,11 +73,7 @@ public class UploadThread extends Thread{
         return true;
     }
 
-    private void checkIfFileNotBiggerThan5GB() {
-        if (export.OutputFile().length() > 5L * 1024 * 1024 * 1024) {
-            throw new IllegalArgumentException("Bestand is groter dan 5GB");
-        } else Util.log(export + " is kleiner dan 5GB");
-    }
+
 
     void createUploadTicket() throws IOException {
         MediaType mediaType = MediaType.parse("application/json");

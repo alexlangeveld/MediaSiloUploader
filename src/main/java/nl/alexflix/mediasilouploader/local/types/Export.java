@@ -239,6 +239,15 @@ public class Export {
         return localTranscodeProgress;
     }
 
+    public boolean checkIfFileBiggerThanXGB(int gigaBytes) {
+        if (this.OutputFile().length() > 5L * 1024 * 1024 * 1024) {
+            Util.log("Bestand " + this + " is groter dan 5GB");
+            return false;
+        }
+        Util.log(this + " is kleiner dan 5GB");
+        return true;
+    }
+
     public int getUploadProgress() {
         return uploadProgress;
     }

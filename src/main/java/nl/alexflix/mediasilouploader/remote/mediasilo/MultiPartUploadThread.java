@@ -1,5 +1,13 @@
 package nl.alexflix.mediasilouploader.remote.mediasilo;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.event.ProgressEvent;
+import com.amazonaws.event.ProgressListener;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.transfer.model.UploadResult;
 import nl.alexflix.mediasilouploader.Util;
 import nl.alexflix.mediasilouploader.local.types.Export;
 import nl.alexflix.mediasilouploader.remote.mediasilo.api.MultiPartUploadTicket;
@@ -9,7 +17,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.Upload;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -77,7 +90,7 @@ public class MultiPartUploadThread extends UploadThread {
             throw new IOException("uploadTicket is geen MultiPartUploadTicket");
         } else {
             uploadTicket = (MultiPartUploadTicket) super.uploadTicket;
-            String filePath = multiPartUploadTicket.getFilePath();
+            String filePath = export.OutputFile().getAbsolutePath();
         }
         String fileName = uploadTicket.getFileName();
         String assetUrl = uploadTicket.getAssetUrl();
@@ -91,9 +104,9 @@ public class MultiPartUploadThread extends UploadThread {
 
         System.out.println("\nsuper.uploadTicket: " + super.uploadTicket);
 
-        globalSessionId = sessionId;
+        String globalSessionId = sessionId;
 
-        File uploadFile = new File(filePath);
+        File uploadFile = export.OutputFile();
 
         BasicSessionCredentials sessionCredentials = new BasicSessionCredentials(
                 accessKey, secretKey, sessionToken);
@@ -102,13 +115,13 @@ public class MultiPartUploadThread extends UploadThread {
                 .withCredentials(new AWSStaticCredentialsProvider(sessionCredentials))
                 .build();
 
-        TransferManager tm = TransferManagerBuilder.standard()
+        TransferManager tx = TransferManagerBuilder.standard()
                 .withS3Client(s3Client)
                 .build();
 
         PutObjectRequest request = new PutObjectRequest(bucketName, objectKey, new FileInputStream(uploadFile), null);
 
-        Upload upload = tm.upload(request);
+        Upload upload = tx.upload(request);
 
         upload.addProgressListener(new ProgressListener() {
             public void progressChanged(ProgressEvent progressEvent) {
@@ -118,13 +131,12 @@ public class MultiPartUploadThread extends UploadThread {
 
         try {
             UploadResult uploadResult = upload.waitForUploadResult();
-            createAsset(assetUrl);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        tm.shutdownNow(false);
+        tx.shutdownNow(false);
     }
 
 }
-}
+

@@ -11,7 +11,7 @@ public class MultiPartUploadTicket extends UploadTicket {
     String accessKey;
     String secretKey;
     String sessionId;
-    String sessioToken;
+    String sessionToken;
     String objectKey;
     String bucketName;
 
@@ -24,7 +24,7 @@ public class MultiPartUploadTicket extends UploadTicket {
         this.accessKey = ticketJson.getString("accessKey");
         this.secretKey = ticketJson.getString("secretKey");
         this.sessionId = ticketJson.getString("sessionId");
-        this.sessioToken = ticketJson.getString("sessionToken");
+        this.sessionToken = ticketJson.getString("sessionToken");
         this.objectKey = ticketJson.getString("objectKey");
         this.bucketName = ticketJson.getString("bucketName");
     }
@@ -49,8 +49,8 @@ public class MultiPartUploadTicket extends UploadTicket {
         return sessionId;
     }
 
-    public String getSessioToken() {
-        return sessioToken;
+    public String getSessionToken() {
+        return sessionToken;
     }
 
     public String getObjectKey() {
@@ -60,4 +60,6 @@ public class MultiPartUploadTicket extends UploadTicket {
     public String getBucketName() {
         return bucketName;
     }
+
+
 }

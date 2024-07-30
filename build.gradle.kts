@@ -22,6 +22,8 @@ dependencies {
 //    implementation("org.jline:jline-terminal:3.26.2")
     implementation("org.jline:jline-terminal:3.21.0")
     implementation(("com.googlecode.lanterna:lanterna:3.1.1"))
+
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.765")
 }
 
 tasks.test {
