@@ -35,6 +35,7 @@ public class Export {
     private File inputFile;
     private Map<String, String> metadata;
     private String[] naamElementen;
+    private boolean skipTranscode = false;
     private Project project;
     protected String naam;
     private File outputFile;
@@ -65,6 +66,8 @@ public class Export {
             if (naamElementen[i].equalsIgnoreCase("nietDownloadbaar")) downloadbaar = false;
             if (naamElementen[i].equalsIgnoreCase("hq")) HQ = true;
             if (naamElementen[i].equalsIgnoreCase("noEmail")) sendEmail = false;
+            if (naamElementen[i].equalsIgnoreCase("skipTranscode")) skipTranscode = true;
+            if (inputFile.getName().substring(inputFile.getName().lastIndexOf('.')).equalsIgnoreCase(".MP4")) skipTranscode = true;
         }
         Util.log("Nieuwe export aangemaakt: " + naam);
         this.status = Status.QUEUED_TRANSCODE_LOCAL;
@@ -285,5 +288,9 @@ public class Export {
 
     public boolean sendEmail() {
         return sendEmail;
+    }
+
+    public boolean skipTranscode() {
+        return skipTranscode;
     }
 }

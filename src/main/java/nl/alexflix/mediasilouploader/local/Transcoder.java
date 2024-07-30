@@ -5,8 +5,11 @@ import nl.alexflix.mediasilouploader.local.types.Export;
 import nl.alexflix.mediasilouploader.Util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -45,8 +48,18 @@ public class Transcoder implements Runnable {
                     uploadQueue.put(current);
                     break;
                 }
+                if (current.skipTranscode()) {
+                    copy(current);
+                    current.setTranscodeProgress(100);
+                    uploadQueue.put(current);
+                    continue;
+                }
+
             } catch (InterruptedException e) {
                 Util.err("Kon bestand niet ophalen uit wachtrij: " + e.getMessage());
+                continue;
+            } catch (IOException e) {
+                Util.err("Transcoder IOex: " + e.getMessage());
                 continue;
             }
 
@@ -83,6 +96,17 @@ public class Transcoder implements Runnable {
         }
         Util.success("Transcoder gestopt");
 
+    }
+
+    private void copy(Export current) throws IOException {
+        Path source = Path.of(current.inputPath());
+        Path target = current.OutputFile().toPath();
+        try {
+            Files.copy(source, target);
+        } catch (IOException e) {
+            Util.err("Kon bestand niet kopiëren: " + e.getMessage());
+            throw e;
+        }
     }
 
     private String[] getCommand(Export export) {

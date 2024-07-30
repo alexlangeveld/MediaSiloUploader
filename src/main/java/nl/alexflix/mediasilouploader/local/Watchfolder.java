@@ -6,12 +6,10 @@ import nl.alexflix.mediasilouploader.Main;
 import nl.alexflix.mediasilouploader.local.types.Exit;
 import nl.alexflix.mediasilouploader.local.types.Export;
 import nl.alexflix.mediasilouploader.Util;
-import nl.alexflix.mediasilouploader.local.types.Incoming;
 import nl.alexflix.mediasilouploader.remote.mediasilo.api.Project;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -95,8 +93,12 @@ public class Watchfolder implements Runnable{
     // TO DO, implement mediainfo logic
     private boolean isFileReady(File file) {
         boolean isMXF = file.getName().substring(file.getName().lastIndexOf('.')).equalsIgnoreCase(".MXF");
-        if (!isMXF) return false;
-        return MediaInfo.isClosed(file.getPath());
+        if (isMXF) return MediaInfo.isMXFClosed(file.getPath());
+
+        boolean isMP4 = file.getName().substring(file.getName().lastIndexOf('.')).equalsIgnoreCase(".MP4");
+        if (isMP4) return MediaInfo.isMP4Closed(file.getPath());
+
+        return false;
     }
 
 //    public synchronized Incoming[] getAll() {
