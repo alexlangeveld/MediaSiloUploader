@@ -68,10 +68,15 @@ public class Emailer implements Runnable {
                         continue;
                     }
                 }
-                Email email = new Email(export, emailTemplate, username);
-                boolean sent = send(email, false);
-                export.setEmailSent(sent);
-                doneQueue.put(export);
+                if (export.sendEmail()) {
+                    Email email = new Email(export, emailTemplate, username);
+                    boolean sent = send(email, false);
+                    export.setEmailSent(sent);
+                    doneQueue.put(export);
+                } else {
+                    export.setEmailSent(false);
+                    doneQueue.put(export);
+                }
             } catch (InterruptedException e) {
                 Util.err("E-mail wachtrij reageert niet: " + e.getMessage());
             } catch (Exception e) {
