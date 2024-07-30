@@ -40,7 +40,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        System.out.println("MediaSiloUploader v0.2.3");
+        System.out.println("MediaSiloUploader v0.3.0");
 
         Map<String, String> envVars = System.getenv();
         if (envVars.containsKey("APIkey") && envVars.containsKey("APIsecret")) {
@@ -87,6 +87,7 @@ public class Main {
             }
         } catch (IOException e) {
             Util.err("Kan projecten niet ophalen: " + e.getMessage());
+            Util.err(e);
             Util.exceptions.add(e);
         }
 

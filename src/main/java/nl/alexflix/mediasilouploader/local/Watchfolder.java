@@ -39,11 +39,16 @@ public class Watchfolder implements Runnable{
             throw new RuntimeException("Pad " + path + " bestaat niet!");
         }
         if (!this.path.isDirectory()) this.path.mkdir();
-        if (!this.inProgresPath.isDirectory()) inProgresPath.mkdir();
-        if (!this.donePath.isDirectory()) donePath.mkdir();
+        if (!this.inProgresPath.isDirectory()) {
+            this.inProgresPath.mkdir();
+            makeHidden(this.inProgresPath);
+        }
+        if (!this.donePath.isDirectory()) {
+            donePath.mkdir();
+            makeHidden(this.donePath);
+        }
 
-        makeHidden(this.donePath);
-        makeHidden(this.inProgresPath);
+
     }
 
     @Override
