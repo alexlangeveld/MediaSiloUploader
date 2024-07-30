@@ -40,7 +40,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        System.out.println("MediaSiloUploader v0.2.2a");
+        System.out.println("MediaSiloUploader v0.2.3");
 
         Map<String, String> envVars = System.getenv();
         if (envVars.containsKey("APIkey") && envVars.containsKey("APIsecret")) {
