@@ -44,6 +44,7 @@ public class Watchfolder implements Runnable{
 
         makeHidden(donePath);
         makeHidden(inProgresPath);
+
     }
 
     @Override
