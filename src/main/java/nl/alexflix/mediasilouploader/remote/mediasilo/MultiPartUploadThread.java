@@ -127,14 +127,19 @@ public class MultiPartUploadThread extends UploadThread {
 
         Upload upload = tx.upload(request);
 
+
+
         upload.addProgressListener(new ProgressListener() {
             private long bytesTransferred = 0;
-
+            private int progressPercentage = 0;
             public void progressChanged(ProgressEvent progressEvent) {
                 bytesTransferred += progressEvent.getBytesTransferred();
                 int progressPercentage = (int) ((bytesTransferred * 100) / totalBytes);
-                export.setUploadProgress(progressPercentage);
-                Util.s3log("Upload progress: " + progressPercentage + "%");
+                if (progressPercentage > this.progressPercentage) {
+                    this.progressPercentage = progressPercentage;
+                    export.setUploadProgress(progressPercentage);
+                    Util.s3log("Upload progress: " + progressPercentage + "%");
+                }
             }
         });
 
