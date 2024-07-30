@@ -5,17 +5,18 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Util {
-    public volatile static List<String> logs = new ArrayList<>();
-    public volatile static List<String> httpLog = new ArrayList<>();
-    public volatile static List<String> errors = new ArrayList<>();
-    public volatile static List<String> sucesses = new ArrayList<>();
-    public volatile static List<Throwable> exceptions = new ArrayList<>();
-    public volatile static List<String> allLogs = new ArrayList<>();
+    public static List<String> logs = Collections.synchronizedList(new ArrayList<>());
+    public static List<String> httpLog = Collections.synchronizedList(new ArrayList<>());
+    public static List<String> errors = Collections.synchronizedList(new ArrayList<>());
+    public static List<String> sucesses = Collections.synchronizedList(new ArrayList<>());
+    public static List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
+    public static List<String> allLogs = Collections.synchronizedList(new ArrayList<>());
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
     public static final String ANSI_YELLOW = "\u001B[27m";
