@@ -12,7 +12,6 @@ import com.amazonaws.services.s3.transfer.model.UploadResult;
 import nl.alexflix.mediasilouploader.Util;
 import nl.alexflix.mediasilouploader.local.types.Export;
 import nl.alexflix.mediasilouploader.remote.mediasilo.api.MultiPartUploadTicket;
-import nl.alexflix.mediasilouploader.remote.mediasilo.api.UploadTicket;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -75,7 +74,6 @@ public class MultiPartUploadThread extends UploadThread {
         }
         String accessKey = uploadTicket.getAccessKey();
         String secretKey = uploadTicket.getSecretKey();
-        String sessionId = uploadTicket.getSessionId();
         String sessionToken = uploadTicket.getSessionToken();
         String objectKey = uploadTicket.getObjectKey();
         String bucketName = uploadTicket.getBucketName();
@@ -120,6 +118,11 @@ public class MultiPartUploadThread extends UploadThread {
 
         try {
             UploadResult uploadResult = upload.waitForUploadResult();
+            Util.success("AWS S3: Upload van "
+                    + export
+                    + " naar "
+                    + uploadResult.getBucketName()
+            );
         } catch (InterruptedException e) {
             Util.err(e);
         }
