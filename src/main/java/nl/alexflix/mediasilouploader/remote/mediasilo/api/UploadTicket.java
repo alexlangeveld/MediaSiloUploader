@@ -14,6 +14,8 @@ public class UploadTicket {
     String amzDate;
     String httpMethod;
 
+    public UploadTicket() {}
+
     public UploadTicket(Response response) throws IOException {
         try {
             JSONObject ticketJson = new JSONObject(response.body().string());

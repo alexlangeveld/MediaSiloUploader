@@ -240,12 +240,13 @@ public class Export {
     }
 
     public boolean checkIfFileBiggerThanXGB(int gigaBytes) {
-        if (this.OutputFile().length() > 5L * 1024 * 1024 * 1024) {
+        long GB = gigaBytes;
+        if (this.OutputFile().length() > GB * 1024 * 1024 * 1024) {
             Util.log("Bestand " + this + " is groter dan 5GB");
-            return false;
+            return true;
         }
         Util.log(this + " is kleiner dan 5GB");
-        return true;
+        return false;
     }
 
     public int getUploadProgress() {

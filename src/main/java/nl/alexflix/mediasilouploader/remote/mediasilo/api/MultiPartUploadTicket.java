@@ -16,7 +16,6 @@ public class MultiPartUploadTicket extends UploadTicket {
     String bucketName;
 
     public MultiPartUploadTicket(Response response) throws IOException {
-        super(response);
         JSONObject ticketJson = new JSONObject(response.body().string());
         this.fileName = ticketJson.getString("fileName");
         super.assetUrl = ticketJson.getString("assetUrl");

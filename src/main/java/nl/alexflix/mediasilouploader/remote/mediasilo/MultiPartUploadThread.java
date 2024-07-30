@@ -4,6 +4,7 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.event.ProgressEvent;
 import com.amazonaws.event.ProgressListener;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -37,21 +38,21 @@ public class MultiPartUploadThread extends UploadThread {
 
     }
 
-    @Override
-    boolean upload(Export export) {
-        try {
-            createUploadTicket();
-            uploadFile();
-            createAsset();
-            checkEncodingProgress();
-            createReviewLink();
-        } catch (IOException | RuntimeException e) {
-            e.printStackTrace();
-            Util.err("Upload mislukt: " + e.getMessage());
-            return false;
-        }
-        return true;
-    }
+//    @Override
+//    boolean upload(Export export) {
+//        try {
+//            createUploadTicket();
+//            uploadFile();
+//            createAsset();
+//            checkEncodingProgress();
+//            createReviewLink();
+//        } catch (IOException | RuntimeException e) {
+//            e.printStackTrace();
+//            Util.err("Upload mislukt: " + e.getMessage());
+//            return false;
+//        }
+//        return true;
+//    }
 
     @Override
     void createUploadTicket() throws IOException {
@@ -102,17 +103,20 @@ public class MultiPartUploadThread extends UploadThread {
         String objectKey = uploadTicket.getObjectKey();
         String bucketName = uploadTicket.getBucketName();
 
-        System.out.println("\nsuper.uploadTicket: " + super.uploadTicket);
+        Util.log("\nsuper.uploadTicket: " + super.uploadTicket);
 
         String globalSessionId = sessionId;
+        Regions region = Regions.US_EAST_1;
 
         File uploadFile = export.OutputFile();
+        long totalBytes = uploadFile.length();
 
         BasicSessionCredentials sessionCredentials = new BasicSessionCredentials(
                 accessKey, secretKey, sessionToken);
 
         AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(sessionCredentials))
+                .withRegion(region)
                 .build();
 
         TransferManager tx = TransferManagerBuilder.standard()
@@ -124,15 +128,22 @@ public class MultiPartUploadThread extends UploadThread {
         Upload upload = tx.upload(request);
 
         upload.addProgressListener(new ProgressListener() {
+            private long bytesTransferred = 0;
+
             public void progressChanged(ProgressEvent progressEvent) {
-                System.out.println(progressEvent);
+                bytesTransferred += progressEvent.getBytesTransferred();
+                int progressPercentage = (int) ((bytesTransferred * 100) / totalBytes);
+                export.setUploadProgress(progressPercentage);
+                Util.s3log("Upload progress: " + progressPercentage + "%");
             }
         });
+
 
         try {
             UploadResult uploadResult = upload.waitForUploadResult();
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Util.err(e);
         }
 
         tx.shutdownNow(false);
