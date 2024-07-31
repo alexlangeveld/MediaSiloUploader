@@ -44,7 +44,7 @@ public class Uploader implements Runnable{
 
                 }
                 String projectID = export.getProject().getId();
-                Thread uploadThread = export.OutputFile().length() > (1024 * 1024 * 100) ?
+                Thread uploadThread = export.OutputFile().length() > (1024L * 1024L * 1024L * 4L) ?
                         new MultiPartUploadThread(export, apiKey, apiSecret, projectID, emailQueue) :
                         new UploadThread(export, apiKey, apiSecret, projectID, emailQueue) ;
 
