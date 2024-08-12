@@ -331,6 +331,7 @@ public class UploadThread extends Thread{
 
     public static void main(String[] args) {
         try {
+            // TO DO : SANITIZE!
             List<Project> projects = getAllProjects("17e052e0-6eb7-4e8d-b3a0-08df142485c6", "6a0b351acdeb3b1ca95fdb7d5d8e57f7");
             for (Project project : projects) {
                 System.out.println(project);

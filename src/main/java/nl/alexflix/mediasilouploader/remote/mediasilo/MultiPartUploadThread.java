@@ -1,5 +1,7 @@
 package nl.alexflix.mediasilouploader.remote.mediasilo;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.event.ProgressEvent;
@@ -124,6 +126,13 @@ public class MultiPartUploadThread extends UploadThread {
                     + uploadResult.getBucketName()
             );
         } catch (InterruptedException e) {
+            Util.err("InterruptedException: " + e);
+            Util.err(e);
+        } catch (AmazonServiceException e) {
+            Util.err("AmazonClientException: " + e);
+            Util.err(e);
+        } catch (AmazonClientException e) {
+            Util.err("AmazonServiceException: " + e);
             Util.err(e);
         }
 
