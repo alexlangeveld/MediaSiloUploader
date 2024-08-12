@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 public class Util {
     public static List<String> logs = Collections.synchronizedList(new ArrayList<>());
     public static List<String> httpLog = Collections.synchronizedList(new ArrayList<>());
-    public static List<String> errors = Collections.synchronizedList(new ArrayList<>());
+        public static List<String> errors = Collections.synchronizedList(new ArrayList<>());
     public static List<String> sucesses = Collections.synchronizedList(new ArrayList<>());
     public static List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
     public static List<String> allLogs = Collections.synchronizedList(new ArrayList<>());
