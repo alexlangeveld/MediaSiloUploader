@@ -52,7 +52,7 @@ public class MediaInfo {
         return metadata;
     }
 
-    public static boolean isClosed(String filePath) {
+    private static boolean isFileClosed(String filePath, String closedString, String openString) {
         boolean closed = false;
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(MEDIAINFO_PATH, "--Output=XML", filePath);
@@ -63,11 +63,11 @@ public class MediaInfo {
 
             String filename = filePath.substring(filePath.lastIndexOf("\\") + 1);
             while ((line = reader.readLine()) != null) {
-                if (line.contains("<Format_Settings>Open / Incomplete</Format_Settings>")) {
+                if (line.contains(openString)) {
                     Util.log(filename + " open, not yet complete");
                     closed = false;
                 }
-                else if (line.contains("<Format_Settings>Closed / Complete</Format_Settings>")) {
+                else if (line.contains(closedString)) {
                     Util.success(filename + " compleet, good to go!");
                     closed = true;
                 }
@@ -87,7 +87,18 @@ public class MediaInfo {
             Util.err("Er ging iets mis met MediaInfo: " + e.getMessage());
         }
 
-       return closed;
+        return closed;
+    }
+    public static boolean isMXFClosed(String filePath) {
+        return isFileClosed(filePath,
+                "<Format_Settings>Closed / Complete</Format_Settings>",
+                "<Format_Settings>Open / Incomplete</Format_Settings>");
+    }
+
+    public static boolean isMP4Closed(String filePath) {
+        return isFileClosed(filePath,
+                "<FileExtension>mp4</FileExtension>",
+                "<IsTruncated>Yes</IsTruncated>");
     }
 }
 

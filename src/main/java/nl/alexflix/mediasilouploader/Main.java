@@ -98,6 +98,7 @@ public class Main {
             watchfolders[i] = new Watchfolder(watchFolderPath, transcodeQueue, exports, projects[i]);
             watchfolderThreads[i] = new Thread(watchfolders[i]);
             watchfolderThreads[i].setName("Watchfolder" + (i + 1) + " voor " + projects[i].getName());
+            watchfolderThreads[i].setPriority(3);
             watchfolderThreads[i].start();
         }
 
@@ -124,6 +125,7 @@ public class Main {
         display = new SimpleDisplay(exports);
         displayThread = new Thread(display);
         displayThread.setName("DisplayThread");
+        displayThread.setPriority(Thread.MAX_PRIORITY);
         displayThread.start();
 
 
