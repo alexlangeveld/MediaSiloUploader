@@ -11,11 +11,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Util {
-    public static List<String> logs = Collections.synchronizedList(new ArrayList<>());
-    public static List<String> httpLog = Collections.synchronizedList(new ArrayList<>());
-    public static List<String> errors = Collections.synchronizedList(new ArrayList<>());
-    public static List<String> sucesses = Collections.synchronizedList(new ArrayList<>());
-    public static List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
+    public static final List<String> logs = Collections.synchronizedList(new ArrayList<>());
+    public static final List<String> httpLog = Collections.synchronizedList(new ArrayList<>());
+    public static final List<String> errors = Collections.synchronizedList(new ArrayList<>());
+    public static final List<String> sucesses = Collections.synchronizedList(new ArrayList<>());
+    public static final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
     public static List<String> allLogs = Collections.synchronizedList(new ArrayList<>());
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
@@ -178,28 +178,41 @@ public class Util {
         System.out.println();
         System.out.println("Alle logs:");
 
-        for (String log : logs) {
-            System.out.println(log);
+        synchronized (logs) {
+            for (String log : logs) {
+                System.out.println(log);
+            }
         }
         System.out.flush();
-        for (String log : httpLog) {
-            System.out.println(log);
-        }
-        System.out.flush();
-        for (String log : sucesses) {
-            System.out.println(log);
-        }
-        System.out.flush();
-        for (String log : errors) {
-            System.out.println(log);
+        synchronized (httpLog) {
+            System.out.flush();
+            for (String log : httpLog) {
+                System.out.println(log);
+            }
         }
         System.out.flush();
 
-        for (Throwable e : exceptions) {
-            System.out.println(ANSI_RED);
-            e.printStackTrace();
-            System.out.println(ANSI_RESET);
+        synchronized (sucesses) {
+            for (String log : sucesses) {
+                System.out.println(log);
+            }
         }
+        System.out.flush();
+
+        synchronized (errors) {
+            for (String log : errors) {
+                System.out.println(log);
+            }
+        }
+        System.out.flush();
+
+        synchronized (exceptions) {
+            for (Throwable e : exceptions) {
+                System.out.println(ANSI_RED);
+                e.printStackTrace();
+                System.out.println(ANSI_RESET);
+            }
+        };
         System.out.flush();
     }
 
