@@ -34,6 +34,12 @@ public class Logger implements Runnable{
     public void add(String message) {
         logs.add(LocalDateTime.now().format(formatter) + " : " + message);
     }
+    public void add(Exception e) {
+        logs.add("[ERR]  " + LocalDateTime.now().format(formatter) + " : " + e.getMessage());
+        for (StackTraceElement stackTraceElement : e.getStackTrace()) {
+            logs.add("[ERR]  " + LocalDateTime.now().format(formatter) + " : " + stackTraceElement.toString());
+        }
+    }
 
     @Override
     public void run() {

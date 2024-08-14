@@ -58,15 +58,18 @@ public class Export {
         this.naamElementen = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.')).split(";");
         this.naam = naamElementen[0];
         for (int i = 1; i < naamElementen.length; i++) {
+            naamElementen[i] = naamElementen[i].trim();
             if (naamElementen[i].contains("@")) emails.add(naamElementen[i]);
             if (naamElementen[i].equalsIgnoreCase("geenTC")) TC = false;
             if (naamElementen[i].equalsIgnoreCase("noTC")) TC = false;
             if (naamElementen[i].equalsIgnoreCase("clean")) TC = false;
             if (naamElementen[i].equalsIgnoreCase("downloadbaar")) downloadbaar = true;
             if (naamElementen[i].equalsIgnoreCase("nietDownloadbaar")) downloadbaar = false;
+            if (naamElementen[i].equalsIgnoreCase("noDL")) downloadbaar = false;
             if (naamElementen[i].equalsIgnoreCase("hq")) HQ = true;
             if (naamElementen[i].equalsIgnoreCase("noEmail")) sendEmail = false;
             if (naamElementen[i].equalsIgnoreCase("skipTranscode")) skipTranscode = true;
+            if (naamElementen[i].equalsIgnoreCase("noTranscode")) skipTranscode = true;
             if (inputFile.getName().substring(inputFile.getName().lastIndexOf('.')).equalsIgnoreCase(".MP4")) skipTranscode = true;
         }
         Util.log("Nieuwe export aangemaakt: " + naam);
@@ -174,7 +177,10 @@ public class Export {
         try {
             int progress = Integer.parseInt(frameString);
             int totalFrames = Integer.parseInt(metadata.get("FrameCount"));
-            this.localTranscodeProgress = progress * 100 / totalFrames;
+            int localTranscodeProgress = progress * 100 / totalFrames;
+            if (localTranscodeProgress > this.localTranscodeProgress) {
+                this.localTranscodeProgress = localTranscodeProgress;
+            }
         } catch (NumberFormatException e) {
             // e.printStackTrace();
         }

@@ -24,6 +24,9 @@ dependencies {
     implementation(("com.googlecode.lanterna:lanterna:3.1.1"))
 
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.765")
+    // https://mvnrepository.com/artifact/software.amazon.awssdk/s3
+//    implementation("software.amazon.awssdk:s3:2.27.4")
+
 }
 
 tasks.test {

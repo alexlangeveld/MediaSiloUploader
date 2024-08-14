@@ -142,6 +142,7 @@ public class Util {
             allLogs.add("[ERR]  " + LocalDateTime.now() + " :  " + element.toString());
         }
         Main.logger.add("[ERR]  " + message);
+        Main.logger.add(e);
     }
 
     public static void success(String message) {

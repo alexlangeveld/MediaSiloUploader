@@ -69,10 +69,10 @@ public class MultiPartUploadThread extends UploadThread {
     @Override
     protected void uploadFile() throws IOException {
         MultiPartUploadTicket uploadTicket;
-        if (!(super.uploadTicket instanceof MultiPartUploadTicket)) {
-            throw new IOException("uploadTicket is geen MultiPartUploadTicket");
-        } else {
+        if (super.uploadTicket instanceof MultiPartUploadTicket) {
             uploadTicket = (MultiPartUploadTicket) super.uploadTicket;
+        } else {
+            throw new IOException("uploadTicket is geen MultiPartUploadTicket");
         }
         String accessKey = uploadTicket.getAccessKey();
         String secretKey = uploadTicket.getSecretKey();
@@ -117,24 +117,12 @@ public class MultiPartUploadThread extends UploadThread {
             }
         });
 
-
         try {
-            UploadResult uploadResult = upload.waitForUploadResult();
-            Util.success("AWS S3: Upload van "
-                    + export
-                    + " naar "
-                    + uploadResult.getBucketName()
-            );
+            upload.waitForCompletion();
         } catch (InterruptedException e) {
-            Util.err("InterruptedException: " + e);
-            Util.err(e);
-        } catch (AmazonServiceException e) {
-            Util.err("AmazonClientException: " + e);
-            Util.err(e);
-        } catch (AmazonClientException e) {
-            Util.err("AmazonServiceException: " + e);
             Util.err(e);
         }
+
 
         tx.shutdownNow(false);
     }
