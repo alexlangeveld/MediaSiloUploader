@@ -2,6 +2,8 @@ package nl.alexflix.mediasilouploader;
 
 import nl.alexflix.mediasilouploader.display.Display;
 import nl.alexflix.mediasilouploader.display.SimpleDisplay;
+import nl.alexflix.mediasilouploader.display.Splash;
+import nl.alexflix.mediasilouploader.display.SwingDisplay;
 import nl.alexflix.mediasilouploader.local.Cleaner;
 import nl.alexflix.mediasilouploader.local.Transcoder;
 import nl.alexflix.mediasilouploader.local.Watchfolder;
@@ -41,6 +43,9 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("MediaSiloUploader v0.3.0");
+
+        Splash splash = new Splash();
+        splash.setVisible(true);
 
         Map<String, String> envVars = System.getenv();
         if (envVars.containsKey("APIkey") && envVars.containsKey("APIsecret")) {
@@ -122,11 +127,14 @@ public class Main {
         cleanerThread.setName("CleanerThread");
         cleanerThread.start();
 
-        display = new SimpleDisplay(exports);
+        display = new SwingDisplay(exports);
+//        display = new SimpleDisplay(exports);
         displayThread = new Thread(display);
         displayThread.setName("DisplayThread");
         displayThread.setPriority(Thread.MAX_PRIORITY);
         displayThread.start();
+        splash.setVisible(false);
+        splash.dispose();
 
 
         //waitForQuit(watchfolder, watchfolderThread, transcoderThread, uploaderThread, emailerThread);
@@ -162,7 +170,7 @@ public class Main {
     }
 
     public static void exit() {
-        exit(watchfolders, transcoderThread, uploaderThread, emailerThread, cleanerThread);
+        exit(watchfolders, transcoderThread, uploaderThread, emailerThread, cleanerThread, displayThread);
     }
 
     public static void exit(Watchfolder[] watchfolders, Thread... threads) {
@@ -178,7 +186,8 @@ public class Main {
             display.stop();
 
             for (Thread thread : threads) {
-                if (thread != null) thread.join();
+                Util.log("Stoppen thread: " + thread.getName());
+                thread.join();
             }
 
         } catch (InterruptedException e) {

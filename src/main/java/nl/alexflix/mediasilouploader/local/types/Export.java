@@ -48,6 +48,7 @@ public class Export {
     private ArrayList<String> emails = new ArrayList<>();
     private boolean TC = true;
     private boolean HQ = false;
+    private int maxBitrate = 2500;
     private boolean downloadbaar = true;
     private boolean sendEmail = true;
     private String link;
@@ -55,6 +56,7 @@ public class Export {
     public Export(File inputFile) {
         this.inputFile = inputFile;
         this.metadata = MediaInfo.extractMetadata(inputFile.getPath());
+        this.maxBitrate = berekenMaxumumBitrateOmNietOver5GBteGaan();
         this.naamElementen = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.')).split(";");
         this.naam = naamElementen[0];
         for (int i = 1; i < naamElementen.length; i++) {
@@ -99,6 +101,29 @@ public class Export {
         }
 
         return result;
+    }
+
+    private int berekenMaxumumBitrateOmNietOver5GBteGaan() {
+        double maxBitrate = 2500; // Default bitrate if calculations fail
+        final long maxFileSizeBytes = 5L * 1024 * 1024 * 1024; // 5GB in bytes
+
+        try {
+            int totalFrames = Integer.parseInt(metadata.get("FrameCount"));
+            double frameRate = Double.parseDouble(metadata.get("FrameRate"));
+            double durationInSeconds = totalFrames / frameRate;
+
+            // Convert 5GB to bits (since bitrate is in bits per second)
+            long maxFileSizeBits = maxFileSizeBytes * 8;
+
+            // Calculate the maximum allowable bitrate in bits per second
+            maxBitrate = maxFileSizeBits / durationInSeconds / 1000; // Convert to kbps
+
+        } catch (NumberFormatException e) {
+            Util.err("Kon maximale bitrate niet berekenen: " + e.getMessage());
+            Util.err(e);
+        }
+
+        return (int) Math.floor(maxBitrate);
     }
 
     public Project getProject() {
@@ -298,5 +323,9 @@ public class Export {
 
     public boolean skipTranscode() {
         return skipTranscode;
+    }
+
+    public int getMaxBitrate() {
+        return maxBitrate;
     }
 }

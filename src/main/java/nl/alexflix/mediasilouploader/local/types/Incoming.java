@@ -1,6 +1,9 @@
 package nl.alexflix.mediasilouploader.local.types;
 
+import nl.alexflix.mediasilouploader.Main;
 import nl.alexflix.mediasilouploader.Util;
+import nl.alexflix.mediasilouploader.display.SimpleDisplay;
+import nl.alexflix.mediasilouploader.display.SwingDisplay;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -28,11 +31,25 @@ public class Incoming extends Export {
     public String toString() {
         fileExists = file.exists();
         if (cyclesMissing >= 10) hide = true;
-        if (fileExists) {
-            return Util.ANSI_BOLD_HIGH_INTENSITY_YELLOW + "=>  " + naam + Util.ANSI_RESET;
+        if (Main.display instanceof SwingDisplay) {
+            String htmlYellow = "<font color='" + "#FFFF00" + "'>";
+            String htmlEndFont = "</font>";
+            String htmlRed = "<font color='" + "#FF0000" + "'>";
+
+            if (fileExists) {
+                return htmlYellow + "=>  " + naam + htmlEndFont;
+            } else {
+                cyclesMissing++;
+                return htmlRed + "  X " + naam + htmlEndFont;
+            }
+
         } else {
-            cyclesMissing++;
-            return Util.ANSI_RED + "  X " + naam + Util.ANSI_RESET;
+            if (fileExists) {
+                return Util.ANSI_BOLD_HIGH_INTENSITY_YELLOW + "=>  " + naam + Util.ANSI_RESET;
+            } else {
+                cyclesMissing++;
+                return Util.ANSI_RED + "  X " + naam + Util.ANSI_RESET;
+            }
         }
     }
 

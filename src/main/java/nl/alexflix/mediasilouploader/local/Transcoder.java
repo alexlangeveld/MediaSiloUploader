@@ -165,12 +165,18 @@ public class Transcoder implements Runnable {
             cmd.add("20");
             cmd.add("-qmin");
             cmd.add("20");
-            cmd.add("-qmax");
-            cmd.add("20");
+//            cmd.add("-qmax");
+//            cmd.add("20");
+            cmd.add("-maxrate");
+            cmd.add(export.getMaxBitrate() + "k");
+            cmd.add("-bufsize");
+            cmd.add((export.getMaxBitrate() * 8) + "k");
         } else {
             cmd.add("-b:v");
-            cmd.add("2.5M");
+            cmd.add(export.getMaxBitrate() < 2500 ? (export.getMaxBitrate() + "k") : "2500k");
         }
+
+
 
         cmd.add("-c:a");
         cmd.add("aac");
@@ -188,12 +194,15 @@ public class Transcoder implements Runnable {
         cmd.add("+faststart");
         cmd.add(export.OutputFile().getPath());
 
-//        System.out.println("FFmpeg command: ");
-//        for (String s : cmd) {
-//            System.out.print(s);
-//            System.out.print(" ");
-//        }
-//        System.out.println();
+        // Log commando
+        StringBuilder log = new StringBuilder("Ffmpeg command: ");
+        for (String s : cmd) {
+            log.append(s);
+            log.append(" ");
+        }
+
+        Util.log(log.toString());
+
         return cmd.toArray(new String[]{});
     }
 

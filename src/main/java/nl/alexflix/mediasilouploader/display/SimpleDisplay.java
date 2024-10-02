@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class SimpleDisplay implements Display {
-    private List<Export> exports;
+    protected List<Export> exports;
     public boolean running = true;
     public String tempStatus = "";
 
@@ -76,7 +76,7 @@ public class SimpleDisplay implements Display {
                 Thread.sleep(2000);
             } catch (InterruptedException ignore) { }
             if (!running) break;
-            String output = render();
+            String output = render(true);
             clearScreen();
             System.out.print(output);
 
@@ -90,17 +90,18 @@ public class SimpleDisplay implements Display {
         Main.verbose(true);
     }
 
-    private String render() {
+    String render(boolean show_logo) {
         StringBuilder sb = new StringBuilder();
 
         sb.append(Util.ANSI_RESET);
 
-        sb.append(Util.ANSI_BOLD_HIGH_INTENSITY_BLUE);
-        for (String line : logo) {
-            sb.append(line + "\n");
+        if (show_logo) {
+            sb.append(Util.ANSI_BOLD_HIGH_INTENSITY_BLUE);
+            for (String line : SimpleDisplay.logo) {
+                sb.append(line + "\n");
+            }
+            sb.append(Util.ANSI_RESET);
         }
-        sb.append(Util.ANSI_RESET);
-
 
         sb.append("\u001B[4m");
         sb.append(

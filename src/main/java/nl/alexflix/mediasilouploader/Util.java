@@ -230,6 +230,38 @@ public class Util {
 
         return logMessage;
     }
+
+    public static String getLogsHTML() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<HTML>");
+
+        for (int i = allLogs.size() - 5; i < allLogs.size(); i++) {
+            sb.append(allLogs.get(i));
+            sb.append("<br>");
+        }
+
+        for (String error : errors) {
+            String replaced_error = error
+                    .replace(ANSI_WHITE_ON_RED, "")
+                    .replace(ANSI_RESET, "")
+                    .replace(ANSI_RED, "");
+
+            sb.append("<font color=\"red\">").append(replaced_error).append("</font>");
+            sb.append("<p>").append(replaced_error).append("</p>");
+            sb.append("<br>");
+        }
+
+
+
+        sb.append("</HTML>");
+
+        String rtn = sb.toString()
+                .replace("[SUCC]", "<font color=\"green\">[SUCC]</font>")
+                .replace("[ERR]", "<font color=\"red\">[ERR]</font>")
+                .replace("[HTTP]", "<font color=\"yellow\">[HTTP]</font>");
+        return rtn;
+
+    }
 }
 
 

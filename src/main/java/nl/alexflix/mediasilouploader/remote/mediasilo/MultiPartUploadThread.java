@@ -1,16 +1,8 @@
 package nl.alexflix.mediasilouploader.remote.mediasilo;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.event.ProgressEvent;
-import com.amazonaws.event.ProgressListener;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.transfer.model.UploadResult;
 import nl.alexflix.mediasilouploader.Util;
 import nl.alexflix.mediasilouploader.local.types.Export;
 import nl.alexflix.mediasilouploader.remote.mediasilo.api.MultiPartUploadTicket;
@@ -19,13 +11,18 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-import com.amazonaws.services.s3.transfer.Upload;
+import com.amazonaws.auth.BasicSessionCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class MultiPartUploadThread extends UploadThread {
@@ -66,66 +63,116 @@ public class MultiPartUploadThread extends UploadThread {
         super.uploadTicket = new MultiPartUploadTicket(ticketResponse);
     }
 
-    @Override
-    protected void uploadFile() throws IOException {
-        MultiPartUploadTicket uploadTicket;
-        if (super.uploadTicket instanceof MultiPartUploadTicket) {
-            uploadTicket = (MultiPartUploadTicket) super.uploadTicket;
-        } else {
-            throw new IOException("uploadTicket is geen MultiPartUploadTicket");
-        }
-        String accessKey = uploadTicket.getAccessKey();
-        String secretKey = uploadTicket.getSecretKey();
-        String sessionToken = uploadTicket.getSessionToken();
-        String objectKey = uploadTicket.getObjectKey();
-        String bucketName = uploadTicket.getBucketName();
+//    @Override
+//    protected void uploadFile() throws IOException {
+//        MultiPartUploadTicket uploadTicket;
+//        if (super.uploadTicket instanceof MultiPartUploadTicket) {
+//            uploadTicket = (MultiPartUploadTicket) super.uploadTicket;
+//        } else {
+//            throw new IOException("uploadTicket is not a MultiPartUploadTicket");
+//        }
+//
+//        String accessKey = uploadTicket.getAccessKey();
+//        String secretKey = uploadTicket.getSecretKey();
+//        String sessionToken = uploadTicket.getSessionToken();
+//        String objectKey = uploadTicket.getObjectKey();
+//        String bucketName = uploadTicket.getBucketName();
+//        final Region region = Region.US_EAST_1;
+//
+//        // Use BasicSessionCredentials if sessionToken is provided
+//        BasicSessionCredentials awsCredentials = new BasicSessionCredentials(accessKey, secretKey, sessionToken);
+//        AwsCredentials sessionCredentials = awsCredentials;
+//
+//        // Create the S3 client with StaticCredentialsProvider
+//        S3Client s3 = S3Client.builder()
+//                .region(region)
+//                .credentialsProvider(new AWSStaticCredentialsProvider(awsCredentials))
+//                .build();
+//
+//        // Initiate a multipart upload
+//        CreateMultipartUploadRequest createRequest = CreateMultipartUploadRequest.builder()
+//                .bucket(bucketName)
+//                .key(objectKey)
+//                .build();
+//
+//        CreateMultipartUploadResponse createResponse = s3.createMultipartUpload(createRequest);
+//        String uploadId = createResponse.uploadId();
+//
+//        // Prepare the parts to be uploaded
+//        List<CompletedPart> completedParts = new ArrayList<>();
+//        int partNumber = 1;
+//        ByteBuffer buffer = ByteBuffer.allocate(5 * 1024 * 1024); // 5 MB part size
+//
+//        try (RandomAccessFile file = new RandomAccessFile(export.OutputFile(), "r")) {
+//            long fileSize = file.length();
+//            long position = 0;
+//
+//            while (position < fileSize) {
+//                file.seek(position);
+//                int bytesRead = file.getChannel().read(buffer);
+//
+//                if (bytesRead == -1) {
+//                    break;
+//                }
+//
+//                buffer.flip();
+//                UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
+//                        .bucket(bucketName)
+//                        .key(objectKey)
+//                        .uploadId(uploadId)
+//                        .partNumber(partNumber)
+//                        .contentLength((long) bytesRead)
+//                        .build();
+//
+//                UploadPartResponse response = s3.uploadPart(uploadPartRequest,
+//                        software.amazon.awssdk.core.sync.RequestBody.fromByteBuffer(buffer));
+//
+//                completedParts.add(CompletedPart.builder()
+//                        .partNumber(partNumber)
+//                        .eTag(response.eTag())
+//                        .build());
+//
+//                buffer.clear();
+//                position += bytesRead;
+//                partNumber++;
+//            }
+//        } catch (IOException e) {
+//            Util.err("MultiPartUploadThread IOException: " + e.getMessage());
+//            Util.err(e);
+//            // Abort the multipart upload on error
+//            s3.abortMultipartUpload(AbortMultipartUploadRequest.builder()
+//                    .bucket(bucketName)
+//                    .key(objectKey)
+//                    .uploadId(uploadId)
+//                    .build());
+//            throw e;
+//        }
+//
+//        // Complete the multipart upload
+//        CompletedMultipartUpload completedUpload = CompletedMultipartUpload.builder()
+//                .parts(completedParts)
+//                .build();
+//
+//        CompleteMultipartUploadRequest completeRequest = CompleteMultipartUploadRequest.builder()
+//                .bucket(bucketName)
+//                .key(objectKey)
+//                .uploadId(uploadId)
+//                .multipartUpload(completedUpload)
+//                .build();
+//
+//        CompleteMultipartUploadResponse completeResponse = s3.completeMultipartUpload(completeRequest);
+//
+//        // Print the object's URL
+//        String objectUrl = s3.utilities().getUrl(GetUrlRequest.builder()
+//                        .bucket(bucketName)
+//                        .key(objectKey)
+//                        .build())
+//                .toExternalForm();
+//
+//        Util.success("Uploaded object URL: " + objectUrl);
+//    }
 
-        Util.log("\nsuper.uploadTicket: " + super.uploadTicket);
 
-        Regions region = Regions.US_EAST_1;
-
-        File uploadFile = export.OutputFile();
-        long totalBytes = uploadFile.length();
-
-        BasicSessionCredentials sessionCredentials = new BasicSessionCredentials(
-                accessKey, secretKey, sessionToken);
-
-        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(sessionCredentials))
-                .withRegion(region)
-                .build();
-
-        TransferManager tx = TransferManagerBuilder.standard()
-                .withS3Client(s3Client)
-                .build();
-
-        PutObjectRequest request = new PutObjectRequest(bucketName, objectKey, new FileInputStream(uploadFile), null);
-
-        Upload upload = tx.upload(request);
-
-        upload.addProgressListener(new ProgressListener() {
-            private long bytesTransferred = 0;
-            private int progressPercentage = 0;
-            public void progressChanged(ProgressEvent progressEvent) {
-                bytesTransferred += progressEvent.getBytesTransferred();
-                int progressPercentage = (int) ((bytesTransferred * 100) / totalBytes);
-                if (progressPercentage > this.progressPercentage) {
-                    this.progressPercentage = progressPercentage;
-                    export.setUploadProgress(progressPercentage);
-                    Util.s3log("Upload progress: " + progressPercentage + "%");
-                }
-            }
-        });
-
-        try {
-            upload.waitForCompletion();
-        } catch (InterruptedException e) {
-            Util.err(e);
-        }
-
-
-        tx.shutdownNow(false);
-    }
 
 }
 
