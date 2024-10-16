@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Main {
+    public static Splash splash;
     public static Logger logger;
     private static Thread loggerThread;
     private static Project[] projects;
@@ -39,12 +40,13 @@ public class Main {
     private static Thread emailerThread;
     private static final LinkedBlockingQueue<Export> doneQueue = new LinkedBlockingQueue<>();
     private static Thread cleanerThread;
+    private static boolean noSSL_UNSAFE = false;
 
 
     public static void main(String[] args) {
-        System.out.println("MediaSiloUploader v0.3.0");
+        System.out.println("MediaSiloUploader v0.4.0");
 
-        Splash splash = new Splash();
+        splash = new Splash();
         splash.setVisible(true);
 
         Map<String, String> envVars = System.getenv();
@@ -67,6 +69,7 @@ public class Main {
                 if (args[i].equalsIgnoreCase("--project")) projectNaam = args[i + 1];
                 if (args[i].equalsIgnoreCase("--emailTemplate")) emailTemplatePath = args[i + 1];
                 if (args[i].equalsIgnoreCase("--logdir")) logFileDir = args[i + 1];
+                if (args[i].equalsIgnoreCase("--noSSL")) noSSL_UNSAFE = true;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             Util.err("Er is iets goed mis met je commando:");
@@ -258,5 +261,9 @@ public class Main {
             } catch (Exception e) {
                 e.printStackTrace();
             }}));
+    }
+
+    public static boolean isNoSSL_UNSAFE() {
+        return noSSL_UNSAFE;
     }
 }

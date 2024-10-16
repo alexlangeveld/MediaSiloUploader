@@ -1,5 +1,6 @@
 package nl.alexflix.mediasilouploader;
 
+import nl.alexflix.mediasilouploader.display.Splash;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
@@ -96,6 +97,7 @@ public class Util {
         if (Main.verbose()) System.out.println("[LOG] " + message);
         logs.add("[LOG]  " + message);
         allLogs.add("[LOG]  " + LocalDateTime.now() + " :  " + message);
+        Splash.setLogText(message);
         Main.logger.add("[LOG]  " + message);
     }
 
@@ -129,6 +131,7 @@ public class Util {
         errors.add(ANSI_WHITE_ON_RED + "[ERR]" + ANSI_RESET + " " + ANSI_RED + message + ANSI_RESET);
         logs.add(ANSI_WHITE_ON_RED + "[ERR]" + ANSI_RESET + " " + ANSI_RED + message + ANSI_RESET);
         allLogs.add("[ERR]  " + LocalDateTime.now() + " :  " + message);
+        Splash.setLogText("[ERR]  " + message);
         Main.logger.add("[ERR]  " + message);
     }
 
@@ -143,6 +146,7 @@ public class Util {
         }
         Main.logger.add("[ERR]  " + message);
         Main.logger.add(e);
+        Splash.setLogText("[ERR]  " + message);
     }
 
     public static void success(String message) {
@@ -151,6 +155,7 @@ public class Util {
         logs.add(ANSI_GREEN + "[SUCCESS] " + ANSI_RESET + message);
         sucesses.add(ANSI_GREEN + "[SUCCESS] " + ANSI_RESET + message);
         allLogs.add("[SUCC] " + LocalDateTime.now() + " :  " + message);
+        Splash.setLogText(message);
         Main.logger.add("[SUCC] " + message);
     }
 
